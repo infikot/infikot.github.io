@@ -33,20 +33,20 @@
         .leaf.color4 { background-color: #f1c40f; }
         .leaf.color5 { background-color: #e98b39; }
         .leaf.color6 { background: radial-gradient(ellipse at center, #f39c12 0%, #e67e22 70%); }
-        .leaf.color7 { background-color: #9b59b6;}
-        .leaf.color8 { background-color: #8e44ad;}
+        .leaf.color7 {background-color: #9b59b6;}
+        .leaf.color8 {background-color: #8e44ad;}
 
         .leaf.repelled {
             opacity: 0.6;
         }
 
-        /* Свечение */
+         /*Свечение*/
         .leaf::before{
             content: '';
             position: absolute;
             top: -2px;
             left: -2px;
-             width: 100%;
+            width: 100%;
             height: 100%;
             border-radius: inherit;
             box-shadow: 0 0 8px rgba(255,255,255,0.4);
@@ -54,10 +54,10 @@
             opacity: 0;
             transition: all 0.3s;
         }
+
         .leaf:hover::before{
             opacity: 1;
         }
-
 
         #text-container {
             position: absolute;
@@ -72,12 +72,11 @@
             bottom: 50px;
             transform: translateX(-50%);
             width: 200px; /* Начальная ширина */
-            height: auto;  /*  высота */
+            height: auto;
             box-sizing: border-box;
             line-height: 1.2;
             padding: 0.2em 0.5em;
             text-align: center; /* Центрирование текста */
-
         }
 
         #telegram-container {
@@ -110,7 +109,7 @@ and more..</div>
 
 <a id="telegram-container" href="https://t.me/infinite_edit" target="_blank">
     <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 16 16">
-      <path fill="currentColor" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.287 5.906c-.778.324-2.334.994-4.666 2.01c-.378.15-.577.298-.595.442c-.03.243.275.339.69.47l.175.055c.408.133.958.288 1.243.294c.26.006.549-.1.868-.32c2.179-1.471 3.304-2.214 3.374-2.23c.05-.012.12-.026.166.016c.047.041.042.12.037.141c-.03.129-1.227 1.241-1.846 1.817c-.193.18-.33.307-.358.336a8.154 8.154 0 0 1-.188.186c-.38.366-.664.64.015 1.088c.327.216.589.393.85.571c.284.194.568.387.936.629c.093.06.183.125.27.187c.331.236.63.448.997.414c.214-.02.435-.22.547-.82c.265-1.417.786-4.486.906-5.751a1.426 1.426 0 0 0-.013-.315a.337.337 0 0 0-.114-.217a.526.526 0 0 0-.31-.093c-.3.005-.763.166-2.984 1.09z"/>
+     <path fill="currentColor" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.287 5.906c-.778.324-2.334.994-4.666 2.01c-.378.15-.577.298-.595.442c-.03.243.275.339.69.47l.175.055c.408.133.958.288 1.243.294c.26.006.549-.1.868-.32c2.179-1.471 3.304-2.214 3.374-2.23c.05-.012.12-.026.166.016c.047.041.042.12.037.141c-.03.129-1.227 1.241-1.846 1.817c-.193.18-.33.307-.358.336a8.154 8.154 0 0 1-.188.186c-.38.366-.664.64.015 1.088c.327.216.589.393.85.571c.284.194.568.387.936.629c.093.06.183.125.27.187c.331.236.63.448.997.414c.214-.02.435-.22.547-.82c.265-1.417.786-4.486.906-5.751a1.426 1.426 0 0 0-.013-.315a.337.337 0 0 0-.114-.217a.526.526 0 0 0-.31-.093c-.3.005-.763.166-2.984 1.09z"/>
     </svg>
 </a>
 
@@ -118,19 +117,19 @@ and more..</div>
     const numLeaves = Math.round(150 / 1.5);
     const windSpeed = 0.2 / 3;
     const gravity = 0.1 / 3;
-    const leafColors = ['color1', 'color2', 'color3', 'color4', 'color5', 'color6','color7','color8'];
+    const leafColors = ['color1', 'color2', 'color3', 'color4', 'color5','color6','color7','color8'];
     const leaves = [];
     const repelRadius = 60;
     const leafRepelForce = 0.5;
 
-   //  создание и добавление листа
+    //  создание и добавление листа
    function createAndAddLeaf() {
         const leaf = document.createElement('div');
         leaf.classList.add('leaf');
         const randomColor = leafColors[Math.floor(Math.random() * leafColors.length)];
         leaf.classList.add(randomColor);
         const x = Math.random() * window.innerWidth;
-        const y = -50 - (Math.random() * window.innerHeight);  //  не только сверху
+        const y = -50 - (Math.random() * window.innerHeight);
         const size = 10 + Math.random() * 15;
         leaf.style.width = `${size}px`;
         leaf.style.height = `${size * 1.5}px`;
@@ -150,90 +149,75 @@ and more..</div>
             vx: (Math.random() - 0.5) * windSpeed,
             vy: 0,
             size: size,
-            delayTimer: null, // Таймер для задержки
+            delayTimer: null,
             isDelayed: false,
-            delayDuration: 3000 + Math.random() * 5000, //  задержка
-            isOnText: false,
-            isResting: false,
+            delayDuration: 3000 + Math.random() * 5000,
+            isOnText: false, //  лист на тексте (больше не используем)
+            isResting: false, //  лист "лежит" (больше не используем)
+            hasTouched: false, //  лист коснулся препятствия
         });
     }
 
     //  листья постепенно (с проверкой видимости)
     function addLeavesGradually() {
         if (leaves.length < numLeaves && document.visibilityState === 'visible') {
-            createAndAddLeaf(); //  создание листа
+            createAndAddLeaf();
             setTimeout(addLeavesGradually, Math.random() * 300);
         }
     }
 
-      //  видимость страницы
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
-            //  новые листья, если нужно
             addLeavesGradually();
             requestAnimationFrame(animate); // Возобновляем
         }
     });
 
-     //  листья
     addLeavesGradually();
 
-      function repelLeaf(leaf, mouseX, mouseY) {
+    function repelLeaf(leaf, mouseX, mouseY) {
     const dx = leaf.x - mouseX;
     const dy = leaf.y - mouseY;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
     if (distance < repelRadius) {
         const repelForce = (1 - distance / repelRadius) * 2;
-
           //  вращение
-         leaf.rotationSpeed = (dx > 0 ? 0.5 : -0.5) * repelForce * 0.2;
+        leaf.rotationSpeed = (dx > 0 ? 0.5 : -0.5) * repelForce * 0.2;
+        leaf.vx += (dx / distance) * repelForce;
+        leaf.vy += (dy / distance) * repelForce;
+        leaf.element.classList.add("repelled");
 
-        if (!leaf.isResting) {
-             leaf.vx += (dx / distance) * repelForce;
-            leaf.vy += (dy / distance) * repelForce;
-            leaf.element.classList.add("repelled");
-        } else {
-             const smallRepelForce = 0.5; //  смещение
-            leaf.x += (dx / distance) * smallRepelForce;
-            leaf.y += (dy / distance) * smallRepelForce;
-        }
     } else {
-        leaf.element.classList.remove("repelled");
-        leaf.rotationSpeed = 0; // Сбрасываем
+         leaf.element.classList.remove("repelled");
+        leaf.rotationSpeed = 0;
     }
 }
-
-    // Отталкивание листьев друг от друга
-     function repelLeavesFromEachOther() {
+      // Отталкивание листьев друг от друга
+    function repelLeavesFromEachOther() {
         for (let i = 0; i < leaves.length; i++) {
-            for (let j = i + 1; j < leaves.length; j++) { //  j = i + 1
+            for (let j = i + 1; j < leaves.length; j++) {
                 const leaf1 = leaves[i];
                 const leaf2 = leaves[j];
 
-                if (leaf1.isResting && leaf2.isResting) continue; //  "лежат"
 
                 const dx = leaf1.x - leaf2.x;
                 const dy = leaf1.y - leaf2.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
 
-                const minDistance = (leaf1.size + leaf2.size) / 3;  //  расстояние
+                const minDistance = (leaf1.size + leaf2.size) / 3;
 
                 if (distance < minDistance) {
                     const overlap = minDistance - distance;
-                    const force = overlap * leafRepelForce; //  отталкивания
+                    const force = overlap * leafRepelForce;
 
                     const nx = dx / distance;
                     const ny = dy / distance;
 
-                    if(!leaf1.isResting){
-                        leaf1.vx += nx * force;
-                        leaf1.vy += ny * force;
-                    }
-                    if(!leaf2.isResting){
-                      leaf2.vx -= nx * force;
-                      leaf2.vy -= ny * force;
-                    }
+                    leaf1.vx += nx * force;
+                    leaf1.vy += ny * force;
+                    leaf2.vx -= nx * force;
+                    leaf2.vy -= ny * force;
                 }
             }
         }
@@ -246,8 +230,8 @@ and more..</div>
         mouseY = event.clientY;
     });
 
-     function isColliding(leaf, textElement) {
-       if (!textElement) return false;
+   function isColliding(leaf, textElement) {
+        if (!textElement) return false;
 
         const leafRect = leaf.element.getBoundingClientRect();
         const textRect = textElement.getBoundingClientRect();
@@ -256,174 +240,146 @@ and more..</div>
                  leafRect.bottom < textRect.top || leafRect.top > textRect.bottom);
     }
 
-    //  анимация
-    function animate() {
+   function animate() {
     const textContainer = document.getElementById('text-container');
 
-     if (document.visibilityState !== 'visible') {
-        return; //  анимация, если страница не видна
+    if (document.visibilityState !== 'visible') {
+        return;
     }
 
     for (let i = 0; i < leaves.length; i++) {
         const leaf = leaves[i];
 
-          repelLeaf(leaf, mouseX, mouseY); // Отталкивание
+        repelLeaf(leaf, mouseX, mouseY); // Отталкивание от курсора
 
+        // Проверяем столкновение с текстом *ИЛИ* другими листьями
         let collision = isColliding(leaf, textContainer);
-
-          if (collision && !leaf.isOnText) {
-            leaf.isOnText = true; //  на тексте
-            leaf.isDelayed = true;
-            leaf.isResting = true;
-
-            // Останавливаем движение
-            leaf.vx = 0;
-            leaf.vy = 0;
-            leaf.rotationSpeed = 0;
-
-             //  таймер для "перезапуска"
-            leaf.delayTimer = setTimeout(() => {
-               leaf.isDelayed = false;
-                leaf.delayTimer = null;
-                leaf.isOnText = false; // Сбрасываем
-                leaf.isResting = false;
-
-                 leaf.x = Math.random() * window.innerWidth;
-                leaf.y = -50- Math.random()*50;
-                leaf.vx = (Math.random() - 0.5) * windSpeed;
-                leaf.vy = 0;
-                 leaf.rotation = Math.random() * 360; // случайный поворот
-
-            }, leaf.delayDuration);
-
-        }
-         //  лист достиг низа, но еще не "лежит" и не на тексте
-        else if (leaf.y + leaf.size * 1.5 >= window.innerHeight - 20 && !leaf.isResting) {
-            leaf.isResting = true; //  "лежит"
-            leaf.isDelayed = true;  //  задержка
-            //  таймер для "перезапуска"
-            leaf.delayTimer = setTimeout(() => {
-                  leaf.isDelayed = false;
-                leaf.delayTimer = null;
-                leaf.isResting = false; // Сбрасываем
-
-                leaf.x = Math.random() * window.innerWidth;
-                leaf.y = -50- Math.random()*50;
-                leaf.vx = (Math.random() - 0.5) * windSpeed;
-                leaf.vy = 0;
-                leaf.rotation = Math.random() * 360;
-            }, leaf.delayDuration);
-
-            // Останавливаем движение
-            leaf.vx = 0;
-            leaf.vy = 0;
-            leaf.rotationSpeed = 0;
+        for(let j = 0; j < leaves.length; j++){
+            if (i !== j){ // не проверяем сам с собой
+               collision = collision || isColliding(leaf, leaves[j].element)
+            }
         }
 
-          if (!leaf.isDelayed && !leaf.isOnText && !leaf.isResting) {
+        //  лист коснулся препятствия
+        if (collision) {
+            leaf.hasTouched = true; //  флаг
+        }
+
+        // Если лист коснулся препятствия, но еще не достиг низа, продолжаем движение вниз
+        if (leaf.hasTouched && leaf.y + leaf.size * 1.5 < window.innerHeight - 20) {
+             // Продолжаем применять гравитацию
             leaf.vy += gravity;
             leaf.x += leaf.vx;
             leaf.y += leaf.vy;
-        }
+         }
+         else if (!leaf.hasTouched){
+            //  не коснулся препятствия, применяем обычную физику
+             leaf.vy += gravity;
+            leaf.x += leaf.vx;
+            leaf.y += leaf.vy;
 
-        if (leaf.isResting) {
-           leaf.x += (Math.random() - 0.5) * 0.2;
-            leaf.y += (Math.random() - 0.5) * 0.2;
-        }
+         }
 
+        // Вращение
         leaf.rotation += leaf.rotationSpeed;
-
-         leaf.vx *= 0.99;
+          // Замедление
+        leaf.vx *= 0.99;
         leaf.vy *= 0.99;
 
         leaf.element.style.transform = `rotate(${leaf.rotation}deg)`;
         leaf.element.style.left = `${leaf.x}px`;
         leaf.element.style.top = `${leaf.y}px`;
 
-          if (leaf.y > window.innerHeight + leaf.size * 1.5 && !leaf.isDelayed && !leaf.isResting) {
-            leaf.x = Math.random() * window.innerWidth;
+
+         // Барьер снизу
+        if (leaf.y + leaf.size * 1.5 > window.innerHeight - 20) {
+             leaf.y = window.innerHeight - 20 - leaf.size*1.5;
+            leaf.vy = 0; // Останавливаем вертикальное движение
+            leaf.vx *= 0.8; // Замедляем горизонтальное (для реалистичности)
+        }
+
+         //  лист полностью ушел за нижний край, перезапускаем
+        if (leaf.y > window.innerHeight + leaf.size * 1.5) {
+             leaf.x = Math.random() * window.innerWidth;
             leaf.y = -50- Math.random()*50;
             leaf.vx = (Math.random() - 0.5) * windSpeed;
             leaf.vy = 0;
             leaf.rotation = Math.random() * 360;
-
+             leaf.hasTouched = false; // Сбрасываем флаг
         }
-
+          //  выход за левую/правую границы
         if (leaf.x + leaf.size < 0) {
-           leaf.x = window.innerWidth;
+             leaf.x = window.innerWidth;
         } else if (leaf.x > window.innerWidth) {
             leaf.x = -leaf.size;
         }
     }
 
-      repelLeavesFromEachOther();  // Отталкиваем листья
+     repelLeavesFromEachOther(); // Отталкиваем листья
 
-      requestAnimationFrame(animate);
+    requestAnimationFrame(animate);
 }
+
     animate();
 
-    //  Перетаскивание текста (с исправлением ошибки)
-    const textContainer = document.getElementById('text-container');
+    //  Перетаскивание текста
+   const textContainer = document.getElementById('text-container');
     let isDragging = false;
     let dragOffsetX = 0;
     let dragOffsetY = 0;
     const lineHeight = parseFloat(getComputedStyle(textContainer).lineHeight); //  размер строки
 
+     //  размер текстового контейнера
+   function setTextContainerSize() {
+        textContainer.style.width = 'auto';
+        textContainer.style.height = 'auto';
 
-    //  размер текстового контейнера
-    function setTextContainerSize() {
-        textContainer.style.width = 'auto'; // Сбрасываем ширину
-        textContainer.style.height = 'auto'; // и высоту
-
-        const lines = textContainer.innerText.split('\n').filter(line => line.trim() !== ''); //  строк
+        const lines = textContainer.innerText.split('\n').filter(line => line.trim() !== '');
         const numLines = lines.length;
-         // Устанавливаем новую высоту, учитывая количество строк и межстрочный интервал
+
         textContainer.style.height = `${numLines * lineHeight}px`;
         textContainer.style.width = `${textContainer.scrollWidth}px`;
 
-           // Добавляем letter-spacing, если текст может заполнить всю ширину
+        // letter-spacing
         const containerWidth = textContainer.offsetWidth;
         let totalTextWidth = 0;
+
         for(let line of lines) {
-            let tempSpan = document.createElement('span');
+             let tempSpan = document.createElement('span');
             tempSpan.style.visibility = 'hidden';
             tempSpan.style.position = 'absolute';
-            tempSpan.style.whiteSpace = 'nowrap'; // Не переносим слова
+            tempSpan.style.whiteSpace = 'nowrap'; // Не переносим
             tempSpan.innerText = line;
             document.body.appendChild(tempSpan);
             totalTextWidth = Math.max(totalTextWidth, tempSpan.offsetWidth) ;
             document.body.removeChild(tempSpan);
+        }
 
-         }
-
-         if (totalTextWidth * 1.1 < containerWidth){  // * 1.1 - небольшой запас
-            // Считаем, сколько места нужно добавить между буквами,
-            // чтобы занять всю ширину
-            const numChars = textContainer.innerText.replace(/\s/g, '').length; //  символов (без пробелов)
+        if (totalTextWidth * 1.1 < containerWidth){
+            const numChars = textContainer.innerText.replace(/\s/g, '').length;
             const extraSpacePerChar = (containerWidth - totalTextWidth) / numChars;
             textContainer.style.letterSpacing = `${extraSpacePerChar}px`;
 
-         }
-         else{
-             textContainer.style.letterSpacing = 'normal';
-         }
-
+        }
+        else{
+           textContainer.style.letterSpacing = 'normal';
+        }
     }
 
-    setTextContainerSize(); //  при загрузке
-    window.addEventListener('resize', setTextContainerSize); //  при изменении размера окна
+     // Вызываем функцию при загрузке страницы и при изменении размера окна
+    setTextContainerSize();
+    window.addEventListener('resize', setTextContainerSize);
 
 
     textContainer.addEventListener('mousedown', (event) => {
-        isDragging = true;
+         isDragging = true;
         dragOffsetX = event.clientX - textContainer.offsetLeft;
         dragOffsetY = event.clientY - textContainer.offsetTop;
 
-         // При начале перетаскивания сбрасываем флаги
-       for (let i = 0; i < leaves.length; i++) {
-        leaves[i].isResting = false;
-        leaves[i].isOnText = false;
-      }
+       // При начале перетаскивания сбрасываем флаг hasTouched для всех листьев
+        for (let i = 0; i < leaves.length; i++) {
+           leaves[i].hasTouched = false;
+        }
     });
 
     document.addEventListener('mousemove', (event) => {
@@ -441,8 +397,9 @@ and more..</div>
     document.addEventListener('mouseup', () => {
         isDragging = false;
     });
-     textContainer.addEventListener('dragstart', (event) => {
-        event.preventDefault();
+
+    textContainer.addEventListener('dragstart', (event) => {
+        event.preventDefault(); //  стандартное поведение
     });
 
     // "Прыгающий" телеграм
@@ -451,16 +408,16 @@ and more..</div>
 
     telegramContainer.addEventListener('mousemove', (event) => {
 
-        if (jumpsLeft > 0) {
-            const jumpX = (Math.random() - 0.5) * 100;
-            const jumpY = (Math.random() - 0.5) * 100;
+         if (jumpsLeft > 0) {
+            const jumpX = (Math.random() - 0.5) * 100; //  смещение по X
+            const jumpY = (Math.random() - 0.5) * 100; //  смещение по Y
 
-            const maxX = window.innerWidth - telegramContainer.offsetWidth;
+             const maxX = window.innerWidth - telegramContainer.offsetWidth;
             const maxY = window.innerHeight - telegramContainer.offsetHeight;
             let newX = telegramContainer.offsetLeft + jumpX;
             let newY = telegramContainer.offsetTop + jumpY;
 
-             newX = Math.max(0, Math.min(newX, maxX));  // Ограничение по X
+             newX = Math.max(0, Math.min(newX, maxX)); // Ограничение по X
             newY = Math.max(0, Math.min(newY, maxY)); // Ограничение по Y
 
             telegramContainer.style.left = `${newX}px`;
@@ -469,7 +426,6 @@ and more..</div>
             jumpsLeft--;
         }
     });
-
 </script>
 </body>
 </html>
