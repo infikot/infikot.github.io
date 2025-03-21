@@ -3,134 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Листопад</title>
+    <title>Волшебный Листопад</title>
     <style>
         body {
             margin: 0;
-            overflow: hidden; /* Скрываем полосы прокрутки */
-            background-color: #b0d4ff; /* Небесно-голубой фон */
-            height: 100vh;  /* Занимает всю высоту */
+            overflow: hidden;
+            background: linear-gradient(to bottom, #355c7d, #6c5b7b, #c06c84); /* Красивый градиент */
+            height: 100vh;
+            cursor: pointer; /* Меняем курсор на "руку", чтобы было понятно, что можно взаимодействовать */
         }
 
         .leaf {
             position: absolute;
-            width: 20px;  /* Ширина листа (подберите размер) */
-            height: 30px; /* Высота листа */
-            background-color: #e67e22; /* Оранжевый цвет */
-            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; /* Форма листа */
-            /* Дополнительные стили для формы */
-            transform-origin: 50% 0;  /* Центр вращения сверху */
+            pointer-events: none; /* Важно! Листья не реагируют на события мыши, чтобы не мешать курсору */
+            width: 20px;
+            height: 30px;
+            background-color: #e67e22; /* Оранжевый (по умолчанию) */
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            transform-origin: 50% 0;
+            opacity: 0.8; /* Добавляем немного прозрачности */
+            transition: transform 0.2s ease-out, opacity 0.5s ease-out; /* Плавные переходы */
         }
 
-        /* Разные цвета листьев */
-        .leaf.color1 { background-color: #e67e22; } /* Оранжевый */
-        .leaf.color2 { background-color: #d35400; } /* Темно-оранжевый */
-        .leaf.color3 { background-color: #c0392b; } /* Красный */
-        .leaf.color4 { background-color: #f1c40f; } /* Желтый */
-        .leaf.color5 { background-color: #e98b39;}
+        /* Цвета листьев */
+        .leaf.color1 { background-color: #e67e22; }
+        .leaf.color2 { background-color: #d35400; }
+        .leaf.color3 { background-color: #c0392b; }
+        .leaf.color4 { background-color: #f1c40f; }
+        .leaf.color5 { background-color: #e98b39; }
+        .leaf.color6 { background: radial-gradient(ellipse at center, #f39c12 0%, #e67e22 70%); } /* Градиентный лист */
+        .leaf.color7 {background-color: #9b59b6; }
+        .leaf.color8 {background-color: #8e44ad; }
 
+        /* Класс для листьев, отталкивающихся от курсора */
+        .leaf.repelled {
+            /* Стили для отталкивания (можно настроить) */
+            /* transform: scale(0.8);  Уменьшение при отталкивании */
+            opacity: 0.5; /* Уменьшаем прозрачность */
+        }
+         /* Добавляем немного "свечения" */
+        .leaf::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            width: calc(100% + 4px);
+            height: calc(100% + 4px);
+            border-radius: inherit;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.3); /* Белое свечение */
+            z-index: -1; /* Помещаем свечение за лист */
+            opacity: 0;
+            transition: opacity 0.3s; /* Плавное появление */
+        }
+        .leaf:hover::before{
+            opacity: 1;
+        }
 
     </style>
 </head>
 <body>
 
 <script>
-    const numLeaves = 100; // Количество листьев
-    const windSpeed = 1;  // Скорость ветра (влияет на горизонтальное движение)
-    const gravity = 0.3;   // Сила гравитации (скорость падения)
-    const leafColors = ['color1', 'color2', 'color3', 'color4', 'color5'];
-    const leaves = [];  // Массив для хранения информации о листьях
+    const numLeaves = 150;
+    const windSpeed = 0.5;  // Уменьшили скорость ветра
+    const gravity = 0.2;  // Уменьшили гравитацию
+    const leafColors = ['color1', 'color2', 'color3', 'color4', 'color5', 'color6', 'color7', 'color8']; // Больше цветов
+    const leaves = [];
+    const repelRadius = 100; // Радиус отталкивания курсора
 
-    // Функция создания листа
+    // Функция создания листа (без изменений, кроме добавления id)
     function createLeaf() {
         const leaf = document.createElement('div');
         leaf.classList.add('leaf');
-
-        // Случайный цвет
         const randomColor = leafColors[Math.floor(Math.random() * leafColors.length)];
         leaf.classList.add(randomColor);
-
-        // Случайное положение по горизонтали и начальное положение выше экрана
         const x = Math.random() * window.innerWidth;
-        const y = -50; // Начинаем выше видимой области
-
-          //Случайный размер
-        const size = 10 + Math.random() * 15; // Размер от 10px до 25px
+        const y = -50;
+        const size = 10 + Math.random() * 15;
         leaf.style.width = `${size}px`;
-        leaf.style.height = `${size * 1.5}px`; // Пропорционально высоте
-
-         // Случайное вращение
-        const initialRotation = Math.random() * 360; //  от 0 до 360 градусов
+        leaf.style.height = `${size * 1.5}px`;
+        const initialRotation = Math.random() * 360;
         leaf.style.transform = `rotate(${initialRotation}deg)`;
-
-
         leaf.style.left = `${x}px`;
         leaf.style.top = `${y}px`;
+        leaf.id = `leaf-${Date.now()}-${Math.random()}`;  // Уникальный ID
 
         document.body.appendChild(leaf);
-
-        // Объект для хранения информации о листе
         return {
             element: leaf,
             x: x,
             y: y,
-            rotation: initialRotation, //  вращение
-            rotationSpeed: (Math.random() - 0.5) * 2, // Скорость вращения (случайная, может быть отрицательной)
-            vx: (Math.random() - 0.5) * windSpeed, // Скорость по X (ветер)
-            vy: 0,  // Начальная скорость по Y
-            size: size,  //сохраняем размер
+            rotation: initialRotation,
+            rotationSpeed: (Math.random() - 0.5) * 1.5, // Меньше скорость вращения
+            vx: (Math.random() - 0.5) * windSpeed,
+            vy: 0,
+            size: size,
         };
     }
 
+
     // Создаем листья
-    for (let i = 0; i < numLeaves; i++) {
-        leaves.push(createLeaf());
-    }
-
-
-    // Функция анимации
-    function animate() {
-        for (let i = 0; i < leaves.length; i++) {
-            const leaf = leaves[i];
-
-            // Применяем гравитацию и ветер
-            leaf.vy += gravity;
-            leaf.x += leaf.vx;
-            leaf.y += leaf.vy;
-
-            //Вращение
-            leaf.rotation += leaf.rotationSpeed;
-            leaf.element.style.transform = `rotate(${leaf.rotation}deg)`;
-
-            // Проверяем столкновение с "землей" (нижней границей экрана)
-            if (leaf.y + leaf.size * 1.5 > window.innerHeight) {
-              //Реализация коллизии - остановка
-                leaf.vy = 0; // Убираем вертикальную скорость
-                leaf.vx = 0;  // Убираем горизонтальную скорость
-                leaf.rotationSpeed = 0; //Останавливаем вращение
-
-                // Позиционируем четко на "земле"
-                leaf.y = window.innerHeight - leaf.size* 1.5;
-            }
-
-
-             // Проверяем выход за левую и правую границы
-            if (leaf.x + leaf.size < 0 ) {
-                leaf.x = window.innerWidth;
-            } else if(leaf.x > window.innerWidth){
-                leaf.x = -leaf.size;  //возвращаем
-            }
-
-            // Обновляем позицию
-            leaf.element.style.left = `${leaf.x}px`;
-            leaf.element.style.top = `${leaf.y}px`;
-
+        for (let i = 0; i < numLeaves; i++) {
+            leaves.push(createLeaf());
         }
 
-        requestAnimationFrame(animate); // Запускаем следующий кадр анимации
+
+    // Функция отталкивания листа от курсора
+    function repelLeaf(leaf, mouseX, mouseY) {
+        const dx = leaf.x - mouseX;
+        const dy = leaf.y - mouseY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < repelRadius) {
+            const repelForce = (1 - distance / repelRadius) * 5; // Сила отталкивания
+            leaf.vx += (dx / distance) * repelForce;
+            leaf.vy += (dy / distance) * repelForce;
+            leaf.element.classList.add("repelled");  // Добавляем класс
+
+        } else {
+             leaf.element.classList.remove("repelled");  // Убираем класс если далеко
+        }
     }
 
-    animate(); // Запускаем анимацию
+    // Обработчик движения мыши
+    let mouseX = 0;
+    let mouseY = 0;
+    document.addEventListener('mousemove', (event) => {
+        mouseX = event.clientX;
+        mouseY = event.clientY;
+    });
+
+
+
+    // Анимация (с изменениями)
+   function animate() {
+    for (let i = 0; i < leaves.length; i++) {
+        const leaf = leaves[i];
+
+        // Отталкивание от курсора
+        repelLeaf(leaf, mouseX, mouseY);
+
+        leaf.vy += gravity;
+        leaf.x += leaf.vx;
+        leaf.y += leaf.vy;
+        leaf.rotation += leaf.rotationSpeed;
+
+        // Ограничение скорости (для более плавного движения)
+        leaf.vx *= 0.98;
+        leaf.vy *= 0.98;
+
+          // Обновляем стили
+        leaf.element.style.transform = `rotate(${leaf.rotation}deg)`;
+        leaf.element.style.left = `${leaf.x}px`;
+        leaf.element.style.top = `${leaf.y}px`;
+
+        // "Перезапуск" листа, когда он уходит за нижний край
+        if (leaf.y > window.innerHeight + leaf.size * 1.5) {  //  расстояние, прежде чем лист "перезапустится"
+            leaf.x = Math.random() * window.innerWidth;
+            leaf.y = -50 - Math.random()*50; //  случайное смещение по Y,
+            leaf.vx = (Math.random() - 0.5) * windSpeed;  // сброс горизонтальной скорости
+            leaf.vy = 0;
+            leaf.rotation = Math.random() * 360;  // случайный поворот
+            leaf.rotationSpeed = (Math.random() - 0.5) * 2;  // случайная скорость вращения
+        }
+
+        //  выход за левую/правую границы
+        if (leaf.x + leaf.size < 0) {
+            leaf.x = window.innerWidth;
+        } else if (leaf.x > window.innerWidth) {
+            leaf.x = -leaf.size;
+        }
+    }
+    requestAnimationFrame(animate);
+}
+
+    animate();
 
 </script>
 </body>
