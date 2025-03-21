@@ -40,7 +40,7 @@
             opacity: 0.6;
         }
 
-         /*Свечение*/
+        /* Свечение */
         .leaf::before{
             content: '';
             position: absolute;
@@ -77,9 +77,9 @@
             line-height: 1.2;
             padding: 0.2em 0.5em;
             text-align: center;
-            border: 2px solid transparent; /*  прозрачная граница */
+            border: 2px solid transparent; /* Прозрачная граница */
         }
-
+          /* Невидимые стенки */
         #text-container::before {
             content: '';
             position: absolute;
@@ -118,7 +118,7 @@
             left: 0;
             width: 100%;
             height: 20px;
-            background-color: transparent; /* Сделал прозрачным */
+            background-color: transparent;
             z-index: 9; /*  над листьями */
         }
 
@@ -131,29 +131,29 @@ and more..</div>
 
 <a id="telegram-container" href="https://t.me/infinite_edit" target="_blank">
     <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 16 16">
-     <path fill="currentColor" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.287 5.906c-.778.324-2.334.994-4.666 2.01c-.378.15-.577.298-.595.442c-.03.243.275.339.69.47l.175.055c.408.133.958.288 1.243.294c.26.006.549-.1.868-.32c2.179-1.471 3.304-2.214 3.374-2.23c.05-.012.12-.026.166.016c.047.041.042.12.037.141c-.03.129-1.227 1.241-1.846 1.817c-.193.18-.33.307-.358.336a8.154 8.154 0 0 1-.188.186c-.38.366-.664.64.015 1.088c.327.216.589.393.85.571c.284.194.568.387.936.629c.093.06.183.125.27.187c.331.236.63.448.997.414c.214-.02.435-.22.547-.82c.265-1.417.786-4.486.906-5.751a1.426 1.426 0 0 0-.013-.315a.337.337 0 0 0-.114-.217a.526.526 0 0 0-.31-.093c-.3.005-.763.166-2.984 1.09z"/>
+        <path fill="currentColor" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.287 5.906c-.778.324-2.334.994-4.666 2.01c-.378.15-.577.298-.595.442c-.03.243.275.339.69.47l.175.055c.408.133.958.288 1.243.294c.26.006.549-.1.868-.32c2.179-1.471 3.304-2.214 3.374-2.23c.05-.012.12-.026.166.016c.047.041.042.12.037.141c-.03.129-1.227 1.241-1.846 1.817c-.193.18-.33.307-.358.336a8.154 8.154 0 0 1-.188.186c-.38.366-.664.64.015 1.088c.327.216.589.393.85.571c.284.194.568.387.936.629c.093.06.183.125.27.187c.331.236.63.448.997.414c.214-.02.435-.22.547-.82c.265-1.417.786-4.486.906-5.751a1.426 1.426 0 0 0-.013-.315a.337.337 0 0 0-.114-.217a.526.526 0 0 0-.31-.093c-.3.005-.763.166-2.984 1.09z"/>
     </svg>
 </a>
 
 <div id="bottom-barrier"></div>
 
 <script>
-    const numLeaves = Math.round(150 / 1.5);
+    const numLeaves = 150;  // Total number of leaves
     const windSpeed = 0.2 / 3;
     const gravity = 0.1 / 3;
     const leafColors = ['color1', 'color2', 'color3', 'color4', 'color5','color6','color7','color8'];
-    const leaves = [];
     const repelRadius = 60;
     const leafRepelForce = 0.5;
+    const leaves = []; // Array to hold leaf objects
 
-     //  создание и добавление листа
-    function createAndAddLeaf() {
+    // Function to create a single leaf
+    function createLeaf() {
         const leaf = document.createElement('div');
         leaf.classList.add('leaf');
         const randomColor = leafColors[Math.floor(Math.random() * leafColors.length)];
         leaf.classList.add(randomColor);
         const x = Math.random() * window.innerWidth;
-        const y = -50 - (Math.random() * window.innerHeight);
+        const y = -50 - (Math.random() * 50); // Start above the screen
         const size = 10 + Math.random() * 15;
         leaf.style.width = `${size}px`;
         leaf.style.height = `${size * 1.5}px`;
@@ -161,11 +161,8 @@ and more..</div>
         leaf.style.transform = `rotate(${initialRotation}deg)`;
         leaf.style.left = `${x}px`;
         leaf.style.top = `${y}px`;
-        leaf.id = `leaf-${Date.now()}-${Math.random()}`;  // Уникальный ID
 
-        document.body.appendChild(leaf);
-
-        leaves.push({
+        return {
             element: leaf,
             x: x,
             y: y,
@@ -174,26 +171,25 @@ and more..</div>
             vx: (Math.random() - 0.5) * windSpeed,
             vy: 0,
             size: size,
-            timeoutId: null, //  ID таймера
-        });
+            timeoutId: null,
+        };
     }
 
-     //  листья постепенно
-    function addLeavesGradually() {
-        if (leaves.length < numLeaves && document.visibilityState === 'visible') {
-            createAndAddLeaf();
-             setTimeout(addLeavesGradually, Math.random() * 300);
+    // Initialize leaves
+    function initializeLeaves() {
+        for (let i = 0; i < numLeaves; i++) {
+            const leaf = createLeaf();
+            leaves.push(leaf);
+            document.body.appendChild(leaf.element); // Add to the DOM
         }
     }
 
     document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
-             addLeavesGradually();
-            requestAnimationFrame(animate); // Возобновляем
-        }
+      if (document.visibilityState === 'visible') {
+        requestAnimationFrame(animate);
+      }
     });
 
-    addLeavesGradually();
 
     function repelLeaf(leaf, mouseX, mouseY) {
         const dx = leaf.x - mouseX;
@@ -202,39 +198,32 @@ and more..</div>
 
         if (distance < repelRadius) {
             const repelForce = (1 - distance / repelRadius) * 2;
-            //  вращение
-            leaf.rotationSpeed = (dx > 0 ? 0.5 : -0.5) * repelForce * 0.2;
+            leaf.rotationSpeed = (dx > 0 ? 0.5 : -0.5) * repelForce * 0.2; // Add rotation
             leaf.vx += (dx / distance) * repelForce;
             leaf.vy += (dy / distance) * repelForce;
-             leaf.element.classList.add("repelled");
-
+            leaf.element.classList.add("repelled");
         } else {
-             leaf.element.classList.remove("repelled");
-            leaf.rotationSpeed = 0;
+            leaf.element.classList.remove("repelled");
+            leaf.rotationSpeed = 0; // Reset rotation speed
         }
     }
 
-     // Отталкивание листьев
     function repelLeavesFromEachOther() {
         for (let i = 0; i < leaves.length; i++) {
             for (let j = i + 1; j < leaves.length; j++) {
                 const leaf1 = leaves[i];
                 const leaf2 = leaves[j];
-
-                 const dx = leaf1.x - leaf2.x;
+                const dx = leaf1.x - leaf2.x;
                 const dy = leaf1.y - leaf2.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-
                 const minDistance = (leaf1.size + leaf2.size) / 3;
 
                 if (distance < minDistance) {
                     const overlap = minDistance - distance;
                     const force = overlap * leafRepelForce;
-
                     const nx = dx / distance;
                     const ny = dy / distance;
-
-                     leaf1.vx += nx * force;
+                    leaf1.vx += nx * force;
                     leaf1.vy += ny * force;
                     leaf2.vx -= nx * force;
                     leaf2.vy -= ny * force;
@@ -243,9 +232,10 @@ and more..</div>
         }
     }
 
+
     let mouseX = 0;
     let mouseY = 0;
-     document.addEventListener('mousemove', (event) => {
+    document.addEventListener('mousemove', (event) => {
         mouseX = event.clientX;
         mouseY = event.clientY;
     });
@@ -262,202 +252,203 @@ and more..</div>
                  leafRect.top > otherRect.bottom);
     }
 
+
     function animate() {
+        if (document.visibilityState !== 'visible') {
+          return;  // Don't animate if not visible
+        }
+
         const textContainer = document.getElementById('text-container');
         const bottomBarrier = document.getElementById('bottom-barrier');
 
-        if (document.visibilityState !== 'visible') {
-            return;
-        }
-
-         for (let i = 0; i < leaves.length; i++) {
+        for (let i = 0; i < leaves.length; i++) {
             const leaf = leaves[i];
 
-             // Отталкиваем от курсора
+            // Apply repulsion from the mouse
             repelLeaf(leaf, mouseX, mouseY);
 
-            //  столкновения
+            // Check for collisions with the text container and other leaves
+            let collidedWithOthers = false;
+            if (isColliding(leaf.element, textContainer)) {
+                collidedWithOthers = true;
+            }
+            for (let j = 0; j < leaves.length; j++) {
+                if (i !== j && isColliding(leaf.element, leaves[j].element)) {
+                    collidedWithOthers = true;
+                    break; // Stop checking after the first collision
+                }
+            }
+
+            // Check for collision with the bottom barrier
             let collidedWithBarrier = false;
             if (isColliding(leaf.element, bottomBarrier)) {
                 collidedWithBarrier = true;
 
-                //  таймер, если его еще нет
                 if (!leaf.timeoutId) {
-                    leaf.timeoutId = setTimeout(() => {
-                         // Удаляем лист
-                        leaf.element.remove();
-                        leaves.splice(i, 1);
-                         i--; // Коррекция индекса
-                    }, 3000 + Math.random() * 9000); //  3 до 12 секунд
+                  leaf.timeoutId = setTimeout(() => {
+                    // Replace the leaf instead of removing it
+                    resetLeaf(i);
+                  }, 3000 + Math.random() * 9000); // Random time between 3 and 12 seconds
                 }
+
             } else {
-                 //  таймер
-                clearTimeout(leaf.timeoutId);
+                 clearTimeout(leaf.timeoutId);
                 leaf.timeoutId = null;
-             }
-
-             //  столкновения с текстом и другими листьями (останавливаем движение)
-            let collidedWithOthers = false;
-            if (isColliding(leaf.element, textContainer)) {
-                collidedWithOthers = true;
-             }
-             for (let j = 0; j < leaves.length; j++) {
-                if (i !== j && isColliding(leaf.element, leaves[j].element)) {
-                    collidedWithOthers = true;
-                    break;
-                 }
             }
 
-
-            // Если столкнулся с чем-то, кроме барьера, останавливаем
-             if (collidedWithOthers) {
+            // If collided with text or other leaves, stop vertical movement
+            if (collidedWithOthers) {
                 leaf.vy = 0;
-             }
-              // Если столкнулся только с барьером, продолжаем движение (чтобы не зависать)
-            if (!collidedWithOthers && !collidedWithBarrier) {
-                 leaf.vy += gravity;
             }
 
+            // Apply gravity only if not colliding with text/leaves AND not colliding with the barrier
+            if (!collidedWithOthers && !collidedWithBarrier) {
+                leaf.vy += gravity;
+            }
 
-            // Вращение
-             leaf.rotation += leaf.rotationSpeed;
+             // Apply rotation
+            leaf.rotation += leaf.rotationSpeed;
 
-             // Замедление
+            // Apply damping to velocity
              leaf.vx *= 0.99;
             leaf.vy *= 0.99;
 
-            //  позиции
-             leaf.x += leaf.vx;
+            // Update position
+            leaf.x += leaf.vx;
             leaf.y += leaf.vy;
 
-
-             leaf.element.style.transform = `rotate(${leaf.rotation}deg)`;
+            // Update element styles
+            leaf.element.style.transform = `rotate(${leaf.rotation}deg)`;
             leaf.element.style.left = `${leaf.x}px`;
             leaf.element.style.top = `${leaf.y}px`;
 
-            //  выход за левую/правую границы
+            // Handle edge cases (optional, but good for continuous animation)
             if (leaf.x + leaf.size < 0) {
-                 leaf.x = window.innerWidth;
+                leaf.x = window.innerWidth; // Wrap around to the right
             } else if (leaf.x > window.innerWidth) {
-                leaf.x = -leaf.size;
-             }
-
-            // Лист ушел за верхний край
-            if (leaf.y < -leaf.size * 1.5) {
-                 leaf.y = window.innerHeight + 50;
-                leaf.x = Math.random() * window.innerWidth;
+                leaf.x = -leaf.size; // Wrap around to the left
             }
         }
 
-        repelLeavesFromEachOther(); // Отталкивание листьев
-         requestAnimationFrame(animate);
+        // Apply leaf-to-leaf repulsion
+        repelLeavesFromEachOther();
+
+        requestAnimationFrame(animate);
     }
 
-    animate();
+    // Function to reset a leaf's properties
+    function resetLeaf(index) {
+        const leaf = leaves[index];
+        // Remove the old leaf element from the DOM
+        if (leaf.element.parentNode) { // Check if the element still exists
+          leaf.element.parentNode.removeChild(leaf.element);
+        }
 
-     //  Перетаскивание текста
+
+        // Create a new leaf object
+        const newLeaf = createLeaf();
+        leaves[index] = newLeaf; // Replace the old leaf data
+        document.body.appendChild(newLeaf.element); // Add to the DOM
+
+    }
+
+
+    initializeLeaves(); // Create all leaves initially
+    animate(); // Start the animation loop
+
+
+    // Dragging text (same as before, included for completeness)
     const textContainer = document.getElementById('text-container');
     let isDragging = false;
     let dragOffsetX = 0;
     let dragOffsetY = 0;
-     const lineHeight = parseFloat(getComputedStyle(textContainer).lineHeight);
+    const lineHeight = parseFloat(getComputedStyle(textContainer).lineHeight);
 
-     function setTextContainerSize() {
-        textContainer.style.width = 'auto';
-        textContainer.style.height = 'auto';
+    function setTextContainerSize() {
+    textContainer.style.width = 'auto';
+    textContainer.style.height = 'auto';
 
-         const lines = textContainer.innerText.split('\n').filter(line => line.trim() !== '');
-        const numLines = lines.length;
+    const lines = textContainer.innerText.split('\n').filter(line => line.trim() !== '');
+    const numLines = lines.length;
 
-         textContainer.style.height = `${numLines * lineHeight}px`;
-        textContainer.style.width = `${textContainer.scrollWidth}px`;
+    textContainer.style.height = `${numLines * lineHeight}px`;
+    textContainer.style.width = `${textContainer.scrollWidth}px`;
 
-         const containerWidth = textContainer.offsetWidth;
-        let totalTextWidth = 0;
+    const containerWidth = textContainer.offsetWidth;
+    let totalTextWidth = 0;
 
-         for(let line of lines) {
-            let tempSpan = document.createElement('span');
-            tempSpan.style.visibility = 'hidden';
-            tempSpan.style.position = 'absolute';
-             tempSpan.style.whiteSpace = 'nowrap';
-            tempSpan.innerText = line;
-             document.body.appendChild(tempSpan);
-            totalTextWidth = Math.max(totalTextWidth, tempSpan.offsetWidth) ;
-            document.body.removeChild(tempSpan);
-        }
-
-        if (totalTextWidth * 1.1 < containerWidth){
-             const numChars = textContainer.innerText.replace(/\s/g, '').length;
-            const extraSpacePerChar = (containerWidth - totalTextWidth) / numChars;
-            textContainer.style.letterSpacing = `${extraSpacePerChar}px`;
-
-         }
-        else{
-            textContainer.style.letterSpacing = 'normal';
-        }
+    for (let line of lines) {
+        let tempSpan = document.createElement('span');
+        tempSpan.style.visibility = 'hidden';
+        tempSpan.style.position = 'absolute';
+        tempSpan.style.whiteSpace = 'nowrap'; // No wrapping
+        tempSpan.innerText = line;
+        document.body.appendChild(tempSpan);
+        totalTextWidth = Math.max(totalTextWidth, tempSpan.offsetWidth);
+        document.body.removeChild(tempSpan);
     }
 
-     setTextContainerSize();
+    if (totalTextWidth * 1.1 < containerWidth) {
+        const numChars = textContainer.innerText.replace(/\s/g, '').length;
+        const extraSpacePerChar = (containerWidth - totalTextWidth) / numChars;
+        textContainer.style.letterSpacing = `${extraSpacePerChar}px`;
+
+    } else {
+        textContainer.style.letterSpacing = 'normal';
+    }
+}
+
+
+    setTextContainerSize();
     window.addEventListener('resize', setTextContainerSize);
 
-
-     textContainer.addEventListener('mousedown', (event) => {
+    textContainer.addEventListener('mousedown', (event) => {
         isDragging = true;
-         dragOffsetX = event.clientX - textContainer.offsetLeft;
+        dragOffsetX = event.clientX - textContainer.offsetLeft;
         dragOffsetY = event.clientY - textContainer.offsetTop;
-
-     });
+    });
 
     document.addEventListener('mousemove', (event) => {
         if (isDragging) {
             const maxX = window.innerWidth - textContainer.offsetWidth;
             const maxY = window.innerHeight - textContainer.offsetHeight;
-
-             let newX = event.clientX - dragOffsetX;
+            let newX = event.clientX - dragOffsetX;
             let newY = event.clientY - dragOffsetY;
-
             newX = Math.max(0, Math.min(newX, maxX));
             newY = Math.max(0, Math.min(newY, maxY));
-
             textContainer.style.left = `${newX}px`;
             textContainer.style.top = `${newY}px`;
-         }
+        }
     });
 
-     document.addEventListener('mouseup', () => {
+    document.addEventListener('mouseup', () => {
         isDragging = false;
-
     });
 
-     textContainer.addEventListener('dragstart', (event) => {
-        event.preventDefault(); //  стандартное поведение
+    textContainer.addEventListener('dragstart', (event) => {
+        event.preventDefault(); // Prevent default drag behavior
     });
 
-
-     // "Прыгающий" телеграм
-     const telegramContainer = document.getElementById('telegram-container');
-     let jumpsLeft = 2;
+    // "Jumping" telegram (optional, same as before)
+    const telegramContainer = document.getElementById('telegram-container');
+    let jumpsLeft = 2;
 
     telegramContainer.addEventListener('mousemove', (event) => {
-
-         if (jumpsLeft > 0) {
+        if (jumpsLeft > 0) {
             const jumpX = (Math.random() - 0.5) * 100;
             const jumpY = (Math.random() - 0.5) * 100;
-
             const maxX = window.innerWidth - telegramContainer.offsetWidth;
             const maxY = window.innerHeight - telegramContainer.offsetHeight;
-             let newX = telegramContainer.offsetLeft + jumpX;
+            let newX = telegramContainer.offsetLeft + jumpX;
             let newY = telegramContainer.offsetTop + jumpY;
-
             newX = Math.max(0, Math.min(newX, maxX));
             newY = Math.max(0, Math.min(newY, maxY));
-
-             telegramContainer.style.left = `${newX}px`;
+            telegramContainer.style.left = `${newX}px`;
             telegramContainer.style.top = `${newY}px`;
-
             jumpsLeft--;
         }
     });
+
 </script>
 </body>
 </html>
