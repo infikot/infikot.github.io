@@ -3,45 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Волшебный Листопад</title>
+    <title>Волшебный Листопад с Текстом</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background: linear-gradient(to bottom, #355c7d, #6c5b7b, #c06c84); /* Красивый градиент */
+            background: linear-gradient(to bottom, #355c7d, #6c5b7b, #c06c84);
             height: 100vh;
-            cursor: pointer; /* Меняем курсор на "руку", чтобы было понятно, что можно взаимодействовать */
+            cursor: pointer;
+            font-family: 'Arial', sans-serif; /* Добавили шрифт */
         }
 
         .leaf {
             position: absolute;
-            pointer-events: none; /* Важно! Листья не реагируют на события мыши, чтобы не мешать курсору */
+            pointer-events: none;
             width: 20px;
             height: 30px;
-            background-color: #e67e22; /* Оранжевый (по умолчанию) */
+            background-color: #e67e22;
             border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
             transform-origin: 50% 0;
-            opacity: 0.8; /* Добавляем немного прозрачности */
-            transition: transform 0.2s ease-out, opacity 0.5s ease-out; /* Плавные переходы */
+            opacity: 0.8;
+            transition: transform 0.2s ease-out, opacity 0.5s ease-out;
         }
 
-        /* Цвета листьев */
         .leaf.color1 { background-color: #e67e22; }
         .leaf.color2 { background-color: #d35400; }
         .leaf.color3 { background-color: #c0392b; }
         .leaf.color4 { background-color: #f1c40f; }
         .leaf.color5 { background-color: #e98b39; }
-        .leaf.color6 { background: radial-gradient(ellipse at center, #f39c12 0%, #e67e22 70%); } /* Градиентный лист */
-        .leaf.color7 {background-color: #9b59b6; }
-        .leaf.color8 {background-color: #8e44ad; }
+        .leaf.color6 { background: radial-gradient(ellipse at center, #f39c12 0%, #e67e22 70%); }
+        .leaf.color7 { background-color: #9b59b6; }
+        .leaf.color8 { background-color: #8e44ad; }
 
-        /* Класс для листьев, отталкивающихся от курсора */
         .leaf.repelled {
-            /* Стили для отталкивания (можно настроить) */
-            /* transform: scale(0.8);  Уменьшение при отталкивании */
-            opacity: 0.5; /* Уменьшаем прозрачность */
+            opacity: 0.6; /* Чуть менее прозрачные при отталкивании */
         }
-         /* Добавляем немного "свечения" */
+         /* "Свечение" */
         .leaf::before {
             content: '';
             position: absolute;
@@ -50,28 +47,46 @@
             width: calc(100% + 4px);
             height: calc(100% + 4px);
             border-radius: inherit;
-            box-shadow: 0 0 5px rgba(255, 255, 255, 0.3); /* Белое свечение */
-            z-index: -1; /* Помещаем свечение за лист */
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+            z-index: -1;
             opacity: 0;
-            transition: opacity 0.3s; /* Плавное появление */
+            transition: opacity 0.3s;
         }
         .leaf:hover::before{
             opacity: 1;
+        }
+
+        #text-container {
+            position: absolute;
+            bottom: 50px; /* Позиционируем текст снизу */
+            left: 50%;
+            transform: translateX(-50%); /* Центрируем */
+            text-align: center;
+            color: white;
+            font-size: 2em;
+            z-index: 1; /* Текст поверх листьев */
+            white-space: pre-line; /* Поддержка переносов строк */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Тень для текста */
         }
 
     </style>
 </head>
 <body>
 
-<script>
-    const numLeaves = 150;
-    const windSpeed = 0.5;  // Уменьшили скорость ветра
-    const gravity = 0.2;  // Уменьшили гравитацию
-    const leafColors = ['color1', 'color2', 'color3', 'color4', 'color5', 'color6', 'color7', 'color8']; // Больше цветов
-    const leaves = [];
-    const repelRadius = 100; // Радиус отталкивания курсора
+<div id="text-container">
+    Hi, this is a test page
+    and more..
+</div>
 
-    // Функция создания листа (без изменений, кроме добавления id)
+<script>
+    const numLeaves = Math.round(150 / 1.5); // Уменьшили в 1.5 раза
+    const windSpeed = 0.2; // Еще меньше ветер
+    const gravity = 0.1;  // Еще меньше гравитация
+    const leafColors = ['color1', 'color2', 'color3', 'color4', 'color5', 'color6','color7','color8'];
+    const leaves = [];
+    const repelRadius = 60; // Уменьшили радиус отталкивания
+    const delayAtBottom = 2000; // Задержка внизу в миллисекундах (2 секунды)
+
     function createLeaf() {
         const leaf = document.createElement('div');
         leaf.classList.add('leaf');
@@ -86,7 +101,7 @@
         leaf.style.transform = `rotate(${initialRotation}deg)`;
         leaf.style.left = `${x}px`;
         leaf.style.top = `${y}px`;
-        leaf.id = `leaf-${Date.now()}-${Math.random()}`;  // Уникальный ID
+        leaf.id = `leaf-${Date.now()}-${Math.random()}`;
 
         document.body.appendChild(leaf);
         return {
@@ -94,38 +109,34 @@
             x: x,
             y: y,
             rotation: initialRotation,
-            rotationSpeed: (Math.random() - 0.5) * 1.5, // Меньше скорость вращения
+            rotationSpeed: (Math.random() - 0.5) * 1, // Еще меньше скорость вращения
             vx: (Math.random() - 0.5) * windSpeed,
             vy: 0,
             size: size,
+            delayTimer: null, // Таймер для задержки
+            isDelayed: false // Флаг задержки
         };
     }
 
+    for (let i = 0; i < numLeaves; i++) {
+        leaves.push(createLeaf());
+    }
 
-    // Создаем листья
-        for (let i = 0; i < numLeaves; i++) {
-            leaves.push(createLeaf());
-        }
-
-
-    // Функция отталкивания листа от курсора
     function repelLeaf(leaf, mouseX, mouseY) {
         const dx = leaf.x - mouseX;
         const dy = leaf.y - mouseY;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance < repelRadius) {
-            const repelForce = (1 - distance / repelRadius) * 5; // Сила отталкивания
+            const repelForce = (1 - distance / repelRadius) * 2; // Уменьшили силу
             leaf.vx += (dx / distance) * repelForce;
             leaf.vy += (dy / distance) * repelForce;
-            leaf.element.classList.add("repelled");  // Добавляем класс
-
+            leaf.element.classList.add("repelled");
         } else {
-             leaf.element.classList.remove("repelled");  // Убираем класс если далеко
+           leaf.element.classList.remove("repelled");
         }
     }
 
-    // Обработчик движения мыши
     let mouseX = 0;
     let mouseY = 0;
     document.addEventListener('mousemove', (event) => {
@@ -133,49 +144,70 @@
         mouseY = event.clientY;
     });
 
+     function animate() {
+        for (let i = 0; i < leaves.length; i++) {
+            const leaf = leaves[i];
+
+            // Отталкивание (если не задержан)
+            if (!leaf.isDelayed){
+              repelLeaf(leaf, mouseX, mouseY);
+            }
+
+            // Задержка внизу
+            if (leaf.y + leaf.size*1.5 >= window.innerHeight - 20 && !leaf.isDelayed) {  //  условие, когда лист внизу
+                leaf.isDelayed = true; //  флаг задержки
+                leaf.delayTimer = setTimeout(() => {
+                    leaf.isDelayed = false;  // Снимаем флаг задержки
+                    leaf.delayTimer = null;   // Очищаем таймер
+                    //  "перезапуск"
+                    leaf.x = Math.random() * window.innerWidth;
+                    leaf.y = -50 - Math.random() * 50;
+                    leaf.vx = (Math.random() - 0.5) * windSpeed;
+                    leaf.vy = 0;
+                    leaf.rotation = Math.random() * 360;
+                    leaf.rotationSpeed = (Math.random() - 0.5) * 1;
+
+                }, delayAtBottom);
+            }
+
+            //  не внизу и не задержан, применяем гравитацию и ветер
+             if(!leaf.isDelayed){
+                leaf.vy += gravity;
+                leaf.x += leaf.vx;
+                leaf.y += leaf.vy;
+             }
+
+            leaf.rotation += leaf.rotationSpeed;
+
+            // Ограничение скорости
+            leaf.vx *= 0.99; // Еще медленнее
+            leaf.vy *= 0.99;
+
+            leaf.element.style.transform = `rotate(${leaf.rotation}deg)`;
+            leaf.element.style.left = `${leaf.x}px`;
+            leaf.element.style.top = `${leaf.y}px`;
 
 
-    // Анимация (с изменениями)
-   function animate() {
-    for (let i = 0; i < leaves.length; i++) {
-        const leaf = leaves[i];
 
-        // Отталкивание от курсора
-        repelLeaf(leaf, mouseX, mouseY);
+            //  лист уходит за нижний край, но еще не задержан - перезапускаем.
+              if (leaf.y > window.innerHeight + leaf.size * 1.5 && !leaf.isDelayed) {
+                leaf.x = Math.random() * window.innerWidth;
+                leaf.y = -50 - Math.random() * 50;
+                leaf.vx = (Math.random() - 0.5) * windSpeed;
+                leaf.vy = 0;
+                 leaf.rotation = Math.random() * 360;  // случайный поворот
+                leaf.rotationSpeed = (Math.random() - 0.5) * 1;
+            }
+            //  выход за левую/правую границы
+              if (leaf.x + leaf.size < 0) {
+                leaf.x = window.innerWidth;
+              } else if (leaf.x > window.innerWidth) {
+                leaf.x = -leaf.size;
+            }
 
-        leaf.vy += gravity;
-        leaf.x += leaf.vx;
-        leaf.y += leaf.vy;
-        leaf.rotation += leaf.rotationSpeed;
-
-        // Ограничение скорости (для более плавного движения)
-        leaf.vx *= 0.98;
-        leaf.vy *= 0.98;
-
-          // Обновляем стили
-        leaf.element.style.transform = `rotate(${leaf.rotation}deg)`;
-        leaf.element.style.left = `${leaf.x}px`;
-        leaf.element.style.top = `${leaf.y}px`;
-
-        // "Перезапуск" листа, когда он уходит за нижний край
-        if (leaf.y > window.innerHeight + leaf.size * 1.5) {  //  расстояние, прежде чем лист "перезапустится"
-            leaf.x = Math.random() * window.innerWidth;
-            leaf.y = -50 - Math.random()*50; //  случайное смещение по Y,
-            leaf.vx = (Math.random() - 0.5) * windSpeed;  // сброс горизонтальной скорости
-            leaf.vy = 0;
-            leaf.rotation = Math.random() * 360;  // случайный поворот
-            leaf.rotationSpeed = (Math.random() - 0.5) * 2;  // случайная скорость вращения
         }
-
-        //  выход за левую/правую границы
-        if (leaf.x + leaf.size < 0) {
-            leaf.x = window.innerWidth;
-        } else if (leaf.x > window.innerWidth) {
-            leaf.x = -leaf.size;
-        }
+        requestAnimationFrame(animate);
     }
-    requestAnimationFrame(animate);
-}
 
     animate();
 
