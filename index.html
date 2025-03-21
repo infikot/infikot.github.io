@@ -124,32 +124,6 @@
             border-top: 5px solid transparent;
             z-index: 9;
         }
-
-        .block {
-            position: absolute;
-            background-color: rgba(255, 255, 255, 0.5);
-            border: 1px solid rgba(0, 0, 0, 0.2);
-            cursor: grab;
-            z-index: 5;
-            user-select: none;
-            transition: transform 0.1s ease-out;
-        }
-
-        .block.dragging {
-            cursor: grabbing;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-            z-index: 6;
-        }
-        .circle {
-            border-radius: 50%;
-        }
-        .rectangle {
-            /*  No specific style needed, default is rectangle */
-        }
-        .square {
-            /*  Aspect ratio will be handled in JS */
-        }
-
     </style>
 </head>
 <body>
@@ -166,17 +140,13 @@
 
     <script>
         const numLeaves = 300;
-        const windSpeed = 0.2;  // Increased for more noticeable wind
-        const gravity = 0.1;  // Increased for stronger gravity
+        const windSpeed = 0.2;
+        const gravity = 0.1;
         const leafColors = ['color1', 'color2', 'color3', 'color4', 'color5', 'color6', 'color7', 'color8'];
         const repelRadius = 60;
         const leafRepelForce = 0.5;
-        const blockGravity = 0.35;  //  Stronger gravity for blocks
-        const blockRepelForce = 0.2;
-        const numBlocks = 8; // Fixed number of blocks
 
         const leaves = [];
-        const blocks = [];
         let animationFrameId = null;
 
         // --- Leaf Creation ---
@@ -187,7 +157,7 @@
             const randomColor = leafColors[Math.floor(Math.random() * leafColors.length)];
             leaf.classList.add(randomColor);
             const x = Math.random() * window.innerWidth;
-            const y = -50 - (Math.random() * 50);
+            const y = -50 - (Math.random() * 50);  // Start above the screen
             const size = 10 + Math.random() * 15;
             leaf.style.width = `${size}px`;
             leaf.style.height = `${size * 1.5}px`;
@@ -205,7 +175,6 @@
                 vx: (Math.random() - 0.5) * windSpeed,
                 vy: 0,
                 size: size,
-                respawnTimer: null,
             };
         }
 
@@ -217,68 +186,6 @@
             }
         }
 
-        // --- Block Creation ---
-
-       function createBlock(type) {
-            const block = document.createElement('div');
-            block.classList.add('block');
-
-            let size, width, height;
-            switch (type) {
-                case 'circle':
-                    block.classList.add('circle');
-                    size = 50 + Math.random() * 70;  // Larger circles
-                    width = size;
-                    height = size;
-                    break;
-                case 'rectangle':
-                    block.classList.add('rectangle');
-                    width = 80 + Math.random() * 120; // Larger rectangles
-                    height = 40 + Math.random() * 80;
-                    break;
-                case 'square':
-                    block.classList.add('square');
-                    size = 60 + Math.random() * 80; // Larger squares
-                    width = size;
-                    height = size;
-                    break;
-            }
-
-            block.style.width = `${width}px`;
-            block.style.height = `${height}px`;
-
-            const x = Math.random() * (window.innerWidth - width);  // Ensure fully on screen
-            const y = Math.random() * (window.innerHeight - height);
-
-            block.style.left = `${x}px`;
-            block.style.top = `${y}px`;
-           document.body.appendChild(block);
-
-            return {
-                element: block,
-                x: x,
-                y: y,
-                vx: 0,
-                vy: 0,
-                rotation: 0,
-                rotationSpeed: 0,
-                isDragging: false,
-                width: width, // Store dimensions
-                height: height,
-            };
-        }
-
-        function initializeBlocks() {
-            // Create specific blocks: 1 circle, 3 rectangles, 4 squares
-            blocks.push(createBlock('circle'));
-            for (let i = 0; i < 3; i++) {
-                blocks.push(createBlock('rectangle'));
-            }
-            for (let i = 0; i < 4; i++) {
-                blocks.push(createBlock('square'));
-            }
-        }
-
         // --- Collision Detection ---
         function isColliding(element1, element2) {
             if (!element1 || !element2) return false;
@@ -286,55 +193,10 @@
             const rect1 = element1.getBoundingClientRect();
             const rect2 = element2.getBoundingClientRect();
 
-            if (element1.classList.contains('circle') && element2.classList.contains('circle')) {
-                const dx = (rect1.left + rect1.width / 2) - (rect2.left + rect2.width / 2);
-                const dy = (rect1.top + rect1.height / 2) - (rect2.top + rect2.height / 2);
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                const combinedRadius = (rect1.width / 2) + (rect2.width / 2);
-                return distance < combinedRadius;
-            }
-
-            if (element1.classList.contains('circle') && !element2.classList.contains('circle') ||
-                !element1.classList.contains('circle') && element2.classList.contains('circle'))
-            {
-                const circle = element1.classList.contains('circle') ? element1 : element2;
-                const rect = element1.classList.contains('circle') ? element2 : element1;
-
-                const circleRect = circle.getBoundingClientRect();
-                const rectRect = rect.getBoundingClientRect();
-
-                const distX = Math.abs((circleRect.left + circleRect.width / 2) - (rectRect.left + rectRect.width / 2));
-                const distY = Math.abs((circleRect.top + circleRect.height / 2) - (rectRect.top + rectRect.height / 2));
-
-                if (distX > (rectRect.width / 2 + circleRect.width / 2)) { return false; }
-                if (distY > (rectRect.height / 2 + circleRect.width / 2)) { return false; }
-
-                if (distX <= (rectRect.width / 2)) { return true; }
-                if (distY <= (rectRect.height / 2)) { return true; }
-
-                const dx = distX - rectRect.width / 2;
-                const dy = distY - rectRect.height / 2;
-                return (dx * dx + dy * dy <= (circleRect.width / 2 * circleRect.width / 2));
-            }
-
             return !(rect1.right < rect2.left ||
                      rect1.left > rect2.right ||
                      rect1.bottom < rect2.top ||
                      rect1.top > rect2.bottom);
-        }
-
-        // --- Leaf Reset ---
-
-        function resetLeaf(leaf) {
-            leaf.x = Math.random() * window.innerWidth;
-            leaf.y = -50 - (Math.random() * 50);
-            leaf.vx = (Math.random() - 0.5) * windSpeed;
-            leaf.vy = 0;
-            leaf.rotation = Math.random() * 360;
-            leaf.rotationSpeed = 0;
-            leaf.element.style.opacity = 1;
-            clearTimeout(leaf.respawnTimer);
-            leaf.respawnTimer = null;
         }
 
         // --- Repulsion ---
@@ -380,6 +242,7 @@
             }
         }
 
+
         // --- Mouse Position ---
 
         let mouseX = 0;
@@ -400,6 +263,7 @@
 
             const textContainer = document.getElementById('text-container');
             const bottomBarrier = document.getElementById('bottom-barrier');
+            const barrierRect = bottomBarrier.getBoundingClientRect(); // Get barrier position
 
             // --- Leaf Updates ---
 
@@ -411,72 +275,47 @@
 
                 let collidedWithOthers = false;
                 if (isColliding(leaf.element, textContainer)) {
-                     collidedWithOthers = true;
+                    collidedWithOthers = true;
                 }
                 for (let j = 0; j < leaves.length; j++) {
                     if (i !== j && isColliding(leaf.element, leaves[j].element)) {
                         collidedWithOthers = true;
-                        break;
+                         break;
                     }
                 }
 
-                for (let block of blocks) {
-                   if (isColliding(leaf.element, block.element)) {
-                     collidedWithOthers = true;
-
-                    const leafRect = leaf.element.getBoundingClientRect();
-                    const blockRect = block.element.getBoundingClientRect();
-
-                    const overlapX = Math.max(0, Math.min(leafRect.right, blockRect.right) - Math.max(leafRect.left, blockRect.left));
-                     const overlapY = Math.max(0, Math.min(leafRect.bottom, blockRect.bottom) - Math.max(leafRect.top, blockRect.top));
-
-                     if (overlapX > 0 && overlapY > 0) {
-                        if (overlapX < overlapY) {
-                           if (leafRect.left < blockRect.left) {
-                                leaf.x -= overlapX;
-                             } else {
-                                leaf.x += overlapX;
-                            }
-                         } else {
-                            if (leafRect.top < blockRect.top) {
-                               leaf.y -= overlapY;
-                           } else {
-                                leaf.y += overlapY;
-                             }
-                        }
-                    }
-                 }
-              }
-
-                if (isColliding(leaf.element, bottomBarrier)) {
-                    leaf.vy = 0;
-                    if (!leaf.respawnTimer) {
-                        leaf.element.style.opacity = 0;
-                        leaf.respawnTimer = setTimeout(() => {
-                            resetLeaf(leaf);
-                        }, 3000 + Math.random() * 9000);
-                    }
-                } else {
-                    clearTimeout(leaf.respawnTimer);
-                    leaf.respawnTimer = null;
+                // Check if the leaf is *below* the barrier
+                const leafRect = leaf.element.getBoundingClientRect();
+                if (leafRect.top > barrierRect.bottom) {
+                    // Remove the leaf from the DOM and the leaves array
+                    leaf.element.remove();
+                    leaves.splice(i, 1);
+                    i--; // Adjust index since we removed an element
+                    continue; // Skip to the next leaf
                 }
+
+
                 if (collidedWithOthers) {
                     leaf.vy = 0;
                 }
+
                 if (!collidedWithOthers) {
-                     leaf.vy += gravity;
+                    leaf.vy += gravity;
                 }
 
                 leaf.rotation += leaf.rotationSpeed;
                 leaf.vx *= 0.99;
                 leaf.vy *= 0.99;
+
                 leaf.x += leaf.vx;
                 leaf.y += leaf.vy;
-                 if (leaf.x + leaf.size < 0) {
+
+                if (leaf.x + leaf.size < 0) {
                     leaf.x = window.innerWidth;
                 } else if (leaf.x > window.innerWidth) {
                     leaf.x = -leaf.size;
                 }
+
 
                 leafUpdates.push({
                     element: leaf.element,
@@ -484,90 +323,41 @@
                     left: `${leaf.x}px`,
                     top: `${leaf.y}px`,
                 });
+
             }
             repelLeavesFromEachOther();
+
+
             for (const update of leafUpdates) {
-                 update.element.style.transform = update.transform;
+                update.element.style.transform = update.transform;
                 update.element.style.left = update.left;
                 update.element.style.top = update.top;
             }
-
-            // --- Block Physics and Collision ---
-            for (let i = 0; i < blocks.length; i++) {
-                const block = blocks[i];
-                if (block.isDragging) continue;
-
-                let blockCollided = false;
-
-                for (let j = 0; j < blocks.length; j++) {
-                    if (i !== j && isColliding(block.element, blocks[j].element)) {
-                       blockCollided = true;
-                        const block1Rect = block.element.getBoundingClientRect();
-                        const block2Rect = blocks[j].element.getBoundingClientRect();
-                        const overlapX = Math.max(0, Math.min(block1Rect.right, block2Rect.right) - Math.max(block1Rect.left, block2Rect.left));
-                        const overlapY = Math.max(0, Math.min(block1Rect.bottom, block2Rect.bottom) - Math.max(block1Rect.top, block2Rect.top));
-                         if (overlapX < overlapY) {
-                            if (block1Rect.left < block2Rect.left) {
-                                block.x -= overlapX / 2;
-                                blocks[j].x += overlapX / 2;
-                            } else {
-                                 block.x += overlapX / 2;
-                                blocks[j].x -= overlapX / 2;
-                            }
-                        } else {
-                            if(block1Rect.top < block2Rect.top){
-                                block.y -= overlapY / 2;
-                                blocks[j].y += overlapY / 2;
-                             }else{
-                                 block.y += overlapY / 2;
-                                blocks[j].y -= overlapY / 2;
-                            }
-                         }
-                         break;
-                     }
-                }
-
-                if (isColliding(block.element, bottomBarrier)) {
-                     blockCollided = true;
-                    block.vy = 0;
-                    block.y = window.innerHeight - block.element.offsetHeight + 5;
-                 }
-
-                if (!blockCollided) {
-                     block.vy += blockGravity;
-                }
-
-                block.x += block.vx;
-                block.y += block.vy;
-                block.vx *= 0.99;
-                block.vy *= 0.99;
-                block.element.style.transform = `translate(${block.x}px, ${block.y}px) rotate(${block.rotation}deg)`;
-            }
-         }
+        }
 
         // --- Initialization ---
 
         initializeLeaves();
-        initializeBlocks();
         animate();
 
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {
-                 animate();
+                animate();
             } else {
                 cancelAnimationFrame(animationFrameId);
             }
-         });
+        });
+
         // --- Text Dragging ---
 
         const textContainer = document.getElementById('text-container');
         let isDraggingText = false;
         let dragOffsetXText = 0;
         let dragOffsetYText = 0;
-         let textZIndex = 10;
+        let textZIndex = 10;
 
         textContainer.addEventListener('mousedown', (event) => {
-             isDraggingText = true;
+            isDraggingText = true;
             dragOffsetXText = event.clientX - textContainer.offsetLeft;
             dragOffsetYText = event.clientY - textContainer.offsetTop;
             textContainer.style.zIndex = ++textZIndex;
@@ -579,140 +369,29 @@
                 const maxX = window.innerWidth - textContainer.offsetWidth;
                 const maxY = window.innerHeight - textContainer.offsetHeight;
                 let newX = event.clientX - dragOffsetXText;
-                 let newY = event.clientY - dragOffsetYText;
+                let newY = event.clientY - dragOffsetYText;
                 newX = Math.max(0, Math.min(newX, maxX));
                 newY = Math.max(0, Math.min(newY, maxY));
-                 textContainer.style.left = `${newX}px`;
+                textContainer.style.left = `${newX}px`;
                 textContainer.style.top = `${newY}px`;
             }
-         });
+        });
 
         document.addEventListener('mouseup', () => {
-             isDraggingText = false;
+            isDraggingText = false;
         });
-         textContainer.addEventListener('dragstart', (e) => e.preventDefault());
 
-        // --- Block Dragging and Rotation ---
-        let activeBlock = null;
-        let dragOffsetXBlock = 0;
-         let dragOffsetYBlock = 0;
-
-        function handleBlockMouseDown(event, block) {
-            // Calculate the offset *from the center* of the block
-             const rect = block.element.getBoundingClientRect();  // Get current position
-            dragOffsetXBlock = event.clientX - (rect.left + rect.width / 2);
-            dragOffsetYBlock = event.clientY - (rect.top + rect.height / 2);
-
-             block.isDragging = true;
-            activeBlock = block;
-            activeBlock.element.classList.add('dragging');
-
-             const allBlocks = document.querySelectorAll('.block');
-            allBlocks.forEach(b => b.style.zIndex = 5);
-            activeBlock.element.style.zIndex = 6;
-
-        }
-        function handleBlockMouseMove(event) {
-             if (activeBlock && activeBlock.isDragging) {
-                 // Calculate the new *center* position
-                 let newCenterX = event.clientX - dragOffsetXBlock;
-                let newCenterY = event.clientY - dragOffsetYBlock;
-
-                 // Calculate top-left based on center and dimensions
-                 let newX = newCenterX - activeBlock.width / 2;
-                let newY = newCenterY - activeBlock.height / 2;
-
-                 // Clamp to screen boundaries
-                const maxX = window.innerWidth - activeBlock.width;
-                const maxY = window.innerHeight - activeBlock.height;
-                newX = Math.max(0, Math.min(newX, maxX));
-                 newY = Math.max(0, Math.min(newY, maxY));
-
-                // Update the block object and element
-                 activeBlock.x = newX;
-                activeBlock.y = newY;
-                 activeBlock.element.style.transform = `translate(${activeBlock.x}px, ${activeBlock.y}px) rotate(${activeBlock.rotation}deg)`;
-
-             }
-         }
-        function handleBlockMouseUp() {
-            if (activeBlock) {
-                 activeBlock.isDragging = false;
-                activeBlock.element.classList.remove('dragging');
-             }
-            activeBlock = null;
-         }
-         function handleBlockWheel(event, block) {
-            event.preventDefault();
-
-            if (activeBlock) {
-                const rotationIncrement = 5;
-                 activeBlock.rotation += event.deltaY > 0 ? -rotationIncrement : rotationIncrement;
-                activeBlock.element.style.transform = `translate(${activeBlock.x}px, ${activeBlock.y}px) rotate(${activeBlock.rotation}deg)`;
-            }
-        }
-        function handleBlockCollision() {
-            if (!activeBlock) return;
-
-            const blocksElem = Array.from(document.querySelectorAll('.block')).filter(b => b !== activeBlock.element);
-            const activeRect = activeBlock.element.getBoundingClientRect();
-
-             for (const otherBlock of blocksElem) {
-                const otherRect = otherBlock.getBoundingClientRect();
-
-                if (isColliding(activeBlock.element, otherBlock)) {
-                    const overlapX = Math.max(0, Math.min(activeRect.right, otherRect.right) - Math.max(activeRect.left, otherRect.left));
-                     const overlapY = Math.max(0, Math.min(activeRect.bottom, otherRect.bottom) - Math.max(activeRect.top, otherRect.top));
-
-                    if(overlapX < overlapY){
-                        if (activeRect.left < otherRect.left) {
-                             activeBlock.element.style.left = `${activeBlock.element.offsetLeft - overlapX}px`;
-                         }else{
-                            activeBlock.element.style.left = `${activeBlock.element.offsetLeft + overlapX}px`;
-                        }
-                    }else{
-                         if (activeRect.top < otherRect.top) {
-                            activeBlock.element.style.top = `${activeBlock.element.offsetTop - overlapY}px`;
-                        }else{
-                             activeBlock.element.style.top = `${activeBlock.element.offsetTop + overlapY}px`;
-                         }
-                    }
-                }
-             }
-        }
-         document.addEventListener('mousemove', handleBlockMouseMove);
-        document.addEventListener('mouseup', handleBlockMouseUp);
-        document.addEventListener('mousemove', handleBlockCollision);
-
-        document.addEventListener('mousedown', (event) => {
-            let target = event.target;
-             while (target) {
-                if (target.classList && target.classList.contains('block')) {
-                    const block = blocks.find(b => b.element === target);
-                    if (block) {
-                         handleBlockMouseDown(event, block);
-                     }
-                    return;
-                }
-                 target = target.parentNode;
-            }
-        });
+        textContainer.addEventListener('dragstart', (e) => e.preventDefault());
 
         // --- Prevent Dragging into Telegram Area ---
 
-         const telegramContainer = document.getElementById('telegram-container');
+        const telegramContainer = document.getElementById('telegram-container');
         telegramContainer.addEventListener('mousedown', (event) => {
-             event.stopPropagation();
+            event.stopPropagation();
         });
         telegramContainer.addEventListener('selectstart', (event) => {
             event.preventDefault();
         });
-        document.addEventListener('wheel', (event) => {
-             if(activeBlock){
-                handleBlockWheel(event, activeBlock);
-            }
-        }, {passive: false});
-
     </script>
 </body>
 </html>
