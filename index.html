@@ -11,7 +11,7 @@
             background: linear-gradient(to bottom, #355c7d, #6c5b7b, #c06c84);
             height: 100vh;
             cursor: pointer;
-            font-family: 'Arial', sans-serif; /* Добавили шрифт */
+            font-family: 'Arial', sans-serif;
         }
 
         .leaf {
@@ -26,6 +26,7 @@
             transition: transform 0.2s ease-out, opacity 0.5s ease-out;
         }
 
+        /* Цвета */
         .leaf.color1 { background-color: #e67e22; }
         .leaf.color2 { background-color: #d35400; }
         .leaf.color3 { background-color: #c0392b; }
@@ -36,56 +37,57 @@
         .leaf.color8 { background-color: #8e44ad; }
 
         .leaf.repelled {
-            opacity: 0.6; /* Чуть менее прозрачные при отталкивании */
+            opacity: 0.6;
         }
-         /* "Свечение" */
-        .leaf::before {
+        /*Свечение */
+        .leaf::before{
             content: '';
             position: absolute;
             top: -2px;
             left: -2px;
-            width: calc(100% + 4px);
-            height: calc(100% + 4px);
+            width: 100%;
+            height: 100%;
             border-radius: inherit;
-            box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 10px rgba(255,255,255,0.4);
             z-index: -1;
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: all 0.3s;
         }
         .leaf:hover::before{
             opacity: 1;
         }
-
         #text-container {
             position: absolute;
-            bottom: 50px; /* Позиционируем текст снизу */
+            bottom: 50px;
             left: 50%;
-            transform: translateX(-50%); /* Центрируем */
+            transform: translateX(-50%);
             text-align: center;
             color: white;
             font-size: 2em;
-            z-index: 1; /* Текст поверх листьев */
-            white-space: pre-line; /* Поддержка переносов строк */
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Тень для текста */
+            z-index: 1;
+            white-space: pre-line;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            cursor: move; /* Курсор для перетаскивания */
+            user-select: none; /* Запрещаем выделение текста */
         }
 
     </style>
 </head>
 <body>
 
-<div id="text-container">
+<div id="text-container" draggable="true">
     Hi, this is a test page
     and more..
 </div>
 
 <script>
-    const numLeaves = Math.round(150 / 1.5); // Уменьшили в 1.5 раза
-    const windSpeed = 0.2; // Еще меньше ветер
-    const gravity = 0.1;  // Еще меньше гравитация
+    const numLeaves = Math.round(150 / 1.5);
+    const windSpeed = 0.2;
+    const gravity = 0.1;
     const leafColors = ['color1', 'color2', 'color3', 'color4', 'color5', 'color6','color7','color8'];
     const leaves = [];
-    const repelRadius = 60; // Уменьшили радиус отталкивания
-    const delayAtBottom = 2000; // Задержка внизу в миллисекундах (2 секунды)
+    const repelRadius = 60;
+    // const delayAtBottom = 2000;  Убрали константу
 
     function createLeaf() {
         const leaf = document.createElement('div');
@@ -93,7 +95,7 @@
         const randomColor = leafColors[Math.floor(Math.random() * leafColors.length)];
         leaf.classList.add(randomColor);
         const x = Math.random() * window.innerWidth;
-        const y = -50;
+        const y = -50 - (Math.random() * window.innerHeight); //  листья появляются не только сверху, но и на разной высоте
         const size = 10 + Math.random() * 15;
         leaf.style.width = `${size}px`;
         leaf.style.height = `${size * 1.5}px`;
@@ -109,18 +111,31 @@
             x: x,
             y: y,
             rotation: initialRotation,
-            rotationSpeed: (Math.random() - 0.5) * 1, // Еще меньше скорость вращения
+            rotationSpeed: (Math.random() - 0.5) * 1,
             vx: (Math.random() - 0.5) * windSpeed,
             vy: 0,
             size: size,
-            delayTimer: null, // Таймер для задержки
-            isDelayed: false // Флаг задержки
+            delayTimer: null,
+            isDelayed: false,
+            delayDuration: 1000 + Math.random() * 4000, // Случайная задержка от 1 до 5 секунд
         };
     }
 
-    for (let i = 0; i < numLeaves; i++) {
-        leaves.push(createLeaf());
+    //  листья сразу
+//     for (let i = 0; i < numLeaves; i++) {
+//         leaves.push(createLeaf());
+//     }
+
+    //  листья постепенно
+    function addLeavesGradually() {
+      if(leaves.length < numLeaves){
+          leaves.push(createLeaf());
+          setTimeout(addLeavesGradually, Math.random() * 200); //  задержка
+      }
     }
+
+    addLeavesGradually();
+
 
     function repelLeaf(leaf, mouseX, mouseY) {
         const dx = leaf.x - mouseX;
@@ -128,12 +143,13 @@
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance < repelRadius) {
-            const repelForce = (1 - distance / repelRadius) * 2; // Уменьшили силу
+            const repelForce = (1 - distance / repelRadius) * 2;
             leaf.vx += (dx / distance) * repelForce;
             leaf.vy += (dy / distance) * repelForce;
-            leaf.element.classList.add("repelled");
-        } else {
-           leaf.element.classList.remove("repelled");
+             leaf.element.classList.add("repelled");
+        }
+        else{
+            leaf.element.classList.remove("repelled");
         }
     }
 
@@ -148,60 +164,56 @@
         for (let i = 0; i < leaves.length; i++) {
             const leaf = leaves[i];
 
-            // Отталкивание (если не задержан)
+
             if (!leaf.isDelayed){
-              repelLeaf(leaf, mouseX, mouseY);
+               repelLeaf(leaf, mouseX, mouseY);
             }
 
-            // Задержка внизу
-            if (leaf.y + leaf.size*1.5 >= window.innerHeight - 20 && !leaf.isDelayed) {  //  условие, когда лист внизу
-                leaf.isDelayed = true; //  флаг задержки
+
+            if (leaf.y + leaf.size * 1.5 >= window.innerHeight - 20 && !leaf.isDelayed) {
+                leaf.isDelayed = true;
                 leaf.delayTimer = setTimeout(() => {
-                    leaf.isDelayed = false;  // Снимаем флаг задержки
-                    leaf.delayTimer = null;   // Очищаем таймер
-                    //  "перезапуск"
+                    leaf.isDelayed = false;
+                    leaf.delayTimer = null;
+
                     leaf.x = Math.random() * window.innerWidth;
-                    leaf.y = -50 - Math.random() * 50;
+                    leaf.y = -50 - Math.random()*50;
                     leaf.vx = (Math.random() - 0.5) * windSpeed;
                     leaf.vy = 0;
-                    leaf.rotation = Math.random() * 360;
+                     leaf.rotation = Math.random() * 360;
                     leaf.rotationSpeed = (Math.random() - 0.5) * 1;
 
-                }, delayAtBottom);
+                }, leaf.delayDuration); //  случайное время
             }
 
-            //  не внизу и не задержан, применяем гравитацию и ветер
-             if(!leaf.isDelayed){
+
+            if(!leaf.isDelayed){
                 leaf.vy += gravity;
                 leaf.x += leaf.vx;
                 leaf.y += leaf.vy;
-             }
+            }
 
             leaf.rotation += leaf.rotationSpeed;
 
-            // Ограничение скорости
-            leaf.vx *= 0.99; // Еще медленнее
+
+            leaf.vx *= 0.99;
             leaf.vy *= 0.99;
 
             leaf.element.style.transform = `rotate(${leaf.rotation}deg)`;
             leaf.element.style.left = `${leaf.x}px`;
             leaf.element.style.top = `${leaf.y}px`;
 
-
-
-            //  лист уходит за нижний край, но еще не задержан - перезапускаем.
-              if (leaf.y > window.innerHeight + leaf.size * 1.5 && !leaf.isDelayed) {
+              if (leaf.y > window.innerHeight + leaf.size * 1.5 && !leaf.isDelayed) { //  лист уходит за нижний край
                 leaf.x = Math.random() * window.innerWidth;
-                leaf.y = -50 - Math.random() * 50;
+                leaf.y = -50- Math.random()*50;
                 leaf.vx = (Math.random() - 0.5) * windSpeed;
                 leaf.vy = 0;
-                 leaf.rotation = Math.random() * 360;  // случайный поворот
+                leaf.rotation = Math.random() * 360;
                 leaf.rotationSpeed = (Math.random() - 0.5) * 1;
             }
-            //  выход за левую/правую границы
               if (leaf.x + leaf.size < 0) {
                 leaf.x = window.innerWidth;
-              } else if (leaf.x > window.innerWidth) {
+            } else if (leaf.x > window.innerWidth) {
                 leaf.x = -leaf.size;
             }
 
@@ -210,6 +222,43 @@
     }
 
     animate();
+
+    // Перетаскивание текста
+    const textContainer = document.getElementById('text-container');
+    let isDragging = false;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+
+    textContainer.addEventListener('mousedown', (event) => {
+        isDragging = true;
+        dragOffsetX = event.clientX - textContainer.offsetLeft;
+        dragOffsetY = event.clientY - textContainer.offsetTop;
+    });
+
+    document.addEventListener('mousemove', (event) => {
+        if (isDragging) {
+            textContainer.style.left = `${event.clientX - dragOffsetX}px`;
+            textContainer.style.top = `${event.clientY - dragOffsetY}px`;
+             //  границы, чтобы текст не выходил за пределы
+            const maxX = window.innerWidth - textContainer.offsetWidth;
+            const maxY = window.innerHeight - textContainer.offsetHeight;
+            const newX = Math.max(0, Math.min(event.clientX - dragOffsetX, maxX));
+            const newY = Math.max(0, Math.min(event.clientY - dragOffsetY, maxY));
+
+             textContainer.style.left = `${newX}px`;
+            textContainer.style.top = `${newY}px`;
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+
+    // Отмена стандартного поведения при перетаскивании
+    textContainer.addEventListener('dragstart', (event) => {
+      event.preventDefault();
+    });
+
 
 </script>
 </body>
