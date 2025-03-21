@@ -23,7 +23,7 @@
             border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
             transform-origin: 50% 0;
             opacity: 0.8;
-            transition: transform 0.2s ease-out, opacity 0.5s ease-out; /* Smooth transitions */
+            transition: transform 0.2s ease-out, opacity 0.5s ease-out;
         }
 
         /* Leaf Colors */
@@ -37,7 +37,7 @@
         .leaf.color8 { background-color: #8e44ad; }
 
         .leaf.repelled {
-            opacity: 0.6; /* Dim when repelled */
+            opacity: 0.6;
         }
 
         /* Leaf Glow (Optional) */
@@ -69,18 +69,20 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
             user-select: none;
             cursor: move;
+            /* Center by default */
             left: 50%;
-            bottom: 50px;
-            transform: translateX(-50%);
+            top: 50%; /* Center vertically */
+            transform: translate(-50%, -50%); /* Center precisely */
             width: 200px;
             height: auto;
             box-sizing: border-box;
             line-height: 1.2;
             padding: 0.2em 0.5em;
             text-align: center;
-            border: 2px solid transparent; /* For collision with leaves */
+            border: 2px solid transparent;
         }
-         /* Collision Border for Text (Larger, Invisible) */
+
+        /* Invisible Collision Border for Text */
         #text-container::before {
             content: '';
             position: absolute;
@@ -113,15 +115,15 @@
             fill: #2AABEE;
         }
 
-        /* Bottom Barrier - NOW WITH A BORDER FOR COLLISION */
+        /* Bottom Barrier -  Transparent Border, Moved Lower */
         #bottom-barrier {
             position: absolute;
-            bottom: 0;
+            bottom: -5px; /*  ниже видимой области */
             left: 0;
             width: 100%;
-            height: 20px; /* Height of the barrier */
-            background-color: transparent; /*  visibility */
-            border-top: 5px solid white;  /*  VISIBLE BORDER */
+            height: 20px;
+            background-color: transparent;
+            border-top: 5px solid transparent; /*  прозрачная граница */
             z-index: 9;
         }
     </style>
@@ -148,6 +150,7 @@ and more..</div>
     const repelRadius = 60;
     const leafRepelForce = 0.5;
     const leaves = [];
+    let animationFrameId = null;
 
     // --- Leaf Creation ---
 
@@ -157,7 +160,7 @@ and more..</div>
         const randomColor = leafColors[Math.floor(Math.random() * leafColors.length)];
         leaf.classList.add(randomColor);
         const x = Math.random() * window.innerWidth;
-        const y = -50 - (Math.random() * 50); // Start above the screen
+        const y = -50 - (Math.random() * 50); // Start above screen
         const size = 10 + Math.random() * 15;
         leaf.style.width = `${size}px`;
         leaf.style.height = `${size * 1.5}px`;
@@ -175,7 +178,7 @@ and more..</div>
             vx: (Math.random() - 0.5) * windSpeed,
             vy: 0,
             size: size,
-            timeoutId: null, // For removal timeout
+            timeoutId: null,
         };
     }
 
@@ -183,7 +186,7 @@ and more..</div>
         for (let i = 0; i < numLeaves; i++) {
             const leaf = createLeaf();
             leaves.push(leaf);
-            document.body.appendChild(leaf.element); // Add to the DOM
+            document.body.appendChild(leaf.element);
         }
     }
 
@@ -194,7 +197,7 @@ and more..</div>
 
         const rect1 = element1.getBoundingClientRect();
         const rect2 = element2.getBoundingClientRect();
-          //  условие столкновения
+
         return !(rect1.right < rect2.left ||
                  rect1.left > rect2.right ||
                  rect1.bottom < rect2.top ||
@@ -202,20 +205,20 @@ and more..</div>
     }
 
     // --- Leaf Reset ---
+
     function resetLeaf(leaf) {
-		//  новые позиции
         leaf.x = Math.random() * window.innerWidth;
-        leaf.y = -50 - (Math.random() * 50);
+        leaf.y = -50 - (Math.random() * 50); // Reset to top
         leaf.vx = (Math.random() - 0.5) * windSpeed;
         leaf.vy = 0;
         leaf.rotation = Math.random() * 360;
         leaf.rotationSpeed = 0;
-        clearTimeout(leaf.timeoutId); // Clear timeout
+        clearTimeout(leaf.timeoutId);
         leaf.timeoutId = null;
     }
 
     // --- Repulsion ---
-
+     // Отталкивание от курсора
     function repelLeaf(leaf, mouseX, mouseY) {
         const dx = leaf.x - mouseX;
         const dy = leaf.y - mouseY;
@@ -226,31 +229,31 @@ and more..</div>
             leaf.rotationSpeed = (dx > 0 ? 0.5 : -0.5) * repelForce * 0.2;
             leaf.vx += (dx / distance) * repelForce;
             leaf.vy += (dy / distance) * repelForce;
-            leaf.element.classList.add("repelled");
+             leaf.element.classList.add("repelled");
         } else {
-            leaf.element.classList.remove("repelled");
+             leaf.element.classList.remove("repelled");
             leaf.rotationSpeed = 0;
         }
     }
-     // Отталкивание листьев
+    // Отталкивание листьев
     function repelLeavesFromEachOther() {
         for (let i = 0; i < leaves.length; i++) {
             for (let j = i + 1; j < leaves.length; j++) {
                 const leaf1 = leaves[i];
                 const leaf2 = leaves[j];
                 const dx = leaf1.x - leaf2.x;
-                const dy = leaf1.y - leaf2.y;
+                 const dy = leaf1.y - leaf2.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 const minDistance = (leaf1.size + leaf2.size) / 3;
 
-                if (distance < minDistance) {
+                 if (distance < minDistance) {
                     const overlap = minDistance - distance;
                     const force = overlap * leafRepelForce;
                     const nx = dx / distance;
                     const ny = dy / distance;
                     leaf1.vx += nx * force;
                     leaf1.vy += ny * force;
-                    leaf2.vx -= nx * force;
+                     leaf2.vx -= nx * force;
                     leaf2.vy -= ny * force;
                 }
             }
@@ -267,178 +270,198 @@ and more..</div>
     });
 
     // --- Animation Loop ---
+
     function animate() {
-        if (document.visibilityState !== 'visible') {
+        animationFrameId = requestAnimationFrame(animate); // Store the ID
+
+         if (document.visibilityState !== 'visible') {
             return;
         }
 
-        const textContainer = document.getElementById('text-container');
+         const textContainer = document.getElementById('text-container');
         const bottomBarrier = document.getElementById('bottom-barrier');
 
-        for (const leaf of leaves) {
+         // Batch updates for performance
+        const leafUpdates = [];
+
+        for (let i = 0; i < leaves.length; i++) {
+             const leaf = leaves[i];
+
             // 1. Repulsion
             repelLeaf(leaf, mouseX, mouseY);
 
-            // 2. Collisions (Text and Other Leaves)
+             // 2. Collisions (Text and Other Leaves)
             let collidedWithOthers = false;
-            if (isColliding(leaf.element, textContainer)) {
+             if (isColliding(leaf.element, textContainer)) {
                 collidedWithOthers = true;
             }
-            for (const otherLeaf of leaves) {
-                if (leaf !== otherLeaf && isColliding(leaf.element, otherLeaf.element)) {
+            for (let j = 0; j < leaves.length; j++) {
+                 if (i !== j && isColliding(leaf.element, leaves[j].element)) {
                     collidedWithOthers = true;
                     break;
                 }
             }
 
-            // 3. Bottom Barrier Collision (using the VISIBLE border)
-            if (isColliding(leaf.element, bottomBarrier)) {
+            // 3. Bottom Barrier Collision
+             if (isColliding(leaf.element, bottomBarrier)) {
                 leaf.vy = 0; // Stop vertical movement
                 if (!leaf.timeoutId) {
                     leaf.timeoutId = setTimeout(() => {
-                        resetLeaf(leaf);
-                    }, 3000 + Math.random() * 9000); // 3 to 12 seconds
-                }
+                        resetLeaf(leaf);  // Reset the leaf
+                    }, 3000 + Math.random() * 9000); //  3 to 12 seconds
+                 }
             } else {
-                clearTimeout(leaf.timeoutId);  // Clear timeout
+                clearTimeout(leaf.timeoutId);
                 leaf.timeoutId = null;
             }
 
-            // 4. Physics (if not colliding with others)
+             // 4. Physics (if not colliding)
             if (collidedWithOthers) {
-                 leaf.vy = 0;
+                leaf.vy = 0;
             }
              if (!collidedWithOthers) {
                 leaf.vy += gravity;
-             }
+            }
+
             leaf.rotation += leaf.rotationSpeed;
-            leaf.vx *= 0.99;
+             leaf.vx *= 0.99;  // Damping
             leaf.vy *= 0.99;
 
-
-            // 5. Update Position
+            // 5. Update Position (but don't apply to DOM yet)
             leaf.x += leaf.vx;
             leaf.y += leaf.vy;
 
-            // 6. Boundary Checks (Wrap around)
-             if (leaf.x + leaf.size < 0) {
-                leaf.x = window.innerWidth;  // Wrap to right
+            // 6. Boundary Checks
+            if (leaf.x + leaf.size < 0) {
+                leaf.x = window.innerWidth;
             } else if (leaf.x > window.innerWidth) {
-                leaf.x = -leaf.size;      // Wrap to left
+                 leaf.x = -leaf.size;
             }
 
-            // 7. Update DOM (Efficient)
-            leaf.element.style.transform = `rotate(${leaf.rotation}deg)`;
-            leaf.element.style.left = `${leaf.x}px`;
-            leaf.element.style.top = `${leaf.y}px`;
+            // 7. Store updates for later
+            leafUpdates.push({
+                element: leaf.element,
+                transform: `rotate(${leaf.rotation}deg)`,
+                left: `${leaf.x}px`,
+                 top: `${leaf.y}px`,
+            });
         }
+          repelLeavesFromEachOther();
 
-         repelLeavesFromEachOther(); // Leaf-to-leaf repulsion
-        requestAnimationFrame(animate);
+         // Apply all updates at once (DOM manipulation)
+        for (const update of leafUpdates) {
+             update.element.style.transform = update.transform;
+            update.element.style.left = update.left;
+            update.element.style.top = update.top;
+        }
     }
 
 
     // --- Initialization ---
 
-    initializeLeaves(); // Create and add leaves to the DOM
-    animate();          // Start the animation loop
+    initializeLeaves(); // Create leaves
+    animate();        // Start animation
+
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
-            requestAnimationFrame(animate);
+             animate();
+        } else {
+             cancelAnimationFrame(animationFrameId); // Stop animation when not visible
         }
     });
 
-    // --- Text Dragging (same as before, included for completeness) ---
+     // --- Text Dragging ---
+
     const textContainer = document.getElementById('text-container');
     let isDragging = false;
     let dragOffsetX = 0;
-    let dragOffsetY = 0;
+     let dragOffsetY = 0;
     const lineHeight = parseFloat(getComputedStyle(textContainer).lineHeight);
 
-     function setTextContainerSize() {
-        textContainer.style.width = 'auto';
+    function setTextContainerSize() {
+         textContainer.style.width = 'auto';
         textContainer.style.height = 'auto';
 
-        const lines = textContainer.innerText.split('\n').filter(line => line.trim() !== '');
+         const lines = textContainer.innerText.split('\n').filter(line => line.trim() !== '');
         const numLines = lines.length;
 
          textContainer.style.height = `${numLines * lineHeight}px`;
         textContainer.style.width = `${textContainer.scrollWidth}px`;
 
-        const containerWidth = textContainer.offsetWidth;
-         let totalTextWidth = 0;
+         const containerWidth = textContainer.offsetWidth;
+        let totalTextWidth = 0;
 
-        for(let line of lines) {
-            let tempSpan = document.createElement('span');
+        for (let line of lines) {
+             let tempSpan = document.createElement('span');
             tempSpan.style.visibility = 'hidden';
-             tempSpan.style.position = 'absolute';
-            tempSpan.style.whiteSpace = 'nowrap';
+            tempSpan.style.position = 'absolute';
+             tempSpan.style.whiteSpace = 'nowrap';
             tempSpan.innerText = line;
-             document.body.appendChild(tempSpan);
-            totalTextWidth = Math.max(totalTextWidth, tempSpan.offsetWidth) ;
+            document.body.appendChild(tempSpan);
+             totalTextWidth = Math.max(totalTextWidth, tempSpan.offsetWidth);
             document.body.removeChild(tempSpan);
         }
 
-        if (totalTextWidth * 1.1 < containerWidth){
+        if (totalTextWidth * 1.1 < containerWidth) {
              const numChars = textContainer.innerText.replace(/\s/g, '').length;
             const extraSpacePerChar = (containerWidth - totalTextWidth) / numChars;
             textContainer.style.letterSpacing = `${extraSpacePerChar}px`;
 
-         }
-         else{
+         } else {
              textContainer.style.letterSpacing = 'normal';
-         }
-    }
+        }
+     }
 
      setTextContainerSize();
     window.addEventListener('resize', setTextContainerSize);
 
-     textContainer.addEventListener('mousedown', (event) => {
+    textContainer.addEventListener('mousedown', (event) => {
         isDragging = true;
         dragOffsetX = event.clientX - textContainer.offsetLeft;
-        dragOffsetY = event.clientY - textContainer.offsetTop;
+         dragOffsetY = event.clientY - textContainer.offsetTop;
     });
 
     document.addEventListener('mousemove', (event) => {
-        if (isDragging) {
-             const maxX = window.innerWidth - textContainer.offsetWidth;
+         if (isDragging) {
+            const maxX = window.innerWidth - textContainer.offsetWidth;
             const maxY = window.innerHeight - textContainer.offsetHeight;
             let newX = event.clientX - dragOffsetX;
             let newY = event.clientY - dragOffsetY;
-             newX = Math.max(0, Math.min(newX, maxX));
+            newX = Math.max(0, Math.min(newX, maxX));
             newY = Math.max(0, Math.min(newY, maxY));
-            textContainer.style.left = `${newX}px`;
-             textContainer.style.top = `${newY}px`;
+             textContainer.style.left = `${newX}px`;
+            textContainer.style.top = `${newY}px`;
         }
     });
 
-     document.addEventListener('mouseup', () => {
-        isDragging = false;
+    document.addEventListener('mouseup', () => {
+         isDragging = false;
     });
 
-    textContainer.addEventListener('dragstart', (event) => {
-         event.preventDefault();
+     textContainer.addEventListener('dragstart', (event) => {
+        event.preventDefault();
     });
 
      // "Jumping" telegram (optional)
+
     const telegramContainer = document.getElementById('telegram-container');
-    let jumpsLeft = 2;
+     let jumpsLeft = 2;
 
     telegramContainer.addEventListener('mousemove', (event) => {
         if (jumpsLeft > 0) {
-            const jumpX = (Math.random() - 0.5) * 100;
-             const jumpY = (Math.random() - 0.5) * 100;
+             const jumpX = (Math.random() - 0.5) * 100;
+            const jumpY = (Math.random() - 0.5) * 100;
             const maxX = window.innerWidth - telegramContainer.offsetWidth;
-             const maxY = window.innerHeight - telegramContainer.offsetHeight;
-            let newX = telegramContainer.offsetLeft + jumpX;
-             let newY = telegramContainer.offsetTop + jumpY;
-            newX = Math.max(0, Math.min(newX, maxX));
-             newY = Math.max(0, Math.min(newY, maxY));
-            telegramContainer.style.left = `${newX}px`;
-             telegramContainer.style.top = `${newY}px`;
-            jumpsLeft--;
+            const maxY = window.innerHeight - telegramContainer.offsetHeight;
+             let newX = telegramContainer.offsetLeft + jumpX;
+            let newY = telegramContainer.offsetTop + jumpY;
+             newX = Math.max(0, Math.min(newX, maxX));
+            newY = Math.max(0, Math.min(newY, maxY));
+             telegramContainer.style.left = `${newX}px`;
+            telegramContainer.style.top = `${newY}px`;
+             jumpsLeft--;
         }
-    });
+     });
 </script>
 </body>
 </html>
