@@ -16,7 +16,8 @@
         }
 
         body.dark-theme {
-            background: linear-gradient(to bottom, #111, #222, #333);
+            /* Dark Theme Gradient: Purple-Black */
+            background: linear-gradient(to bottom, #4a004a, #1a001a, #000000);
         }
 
         .leaf {
@@ -222,9 +223,9 @@
                 size: isToggleLeaf ? 20 : (10 + Math.random() * 15),
                 respawnTimer: null,
                 atBottom: false,
-                atText: false, // Flag for being on the text
+                atText: false,
                 bottomDuration: 0,
-                textDuration: 0, // Duration for being on the text
+                textDuration: 0,
                 isToggleLeaf: isToggleLeaf
             };
         }
@@ -284,9 +285,9 @@
             leaf.rotationSpeed = 0;
             leaf.element.style.opacity = leaf.isToggleLeaf ? 0.8 : 0.8;
             leaf.atBottom = false;
-            leaf.atText = false; // Reset text flag
+            leaf.atText = false;
             leaf.bottomDuration = 0;
-            leaf.textDuration = 0;  // Reset text duration
+            leaf.textDuration = 0;
             clearTimeout(leaf.respawnTimer);
             leaf.respawnTimer = null;
             if (leaf.element) {
@@ -375,7 +376,7 @@
             for (let i = 0; i < leaves.length; i++) {
               const leaf = leaves[i];
 
-              if (!leaf.atBottom && !leaf.atText) {  // Repel only if not at bottom *or* text
+              if (!leaf.atBottom && !leaf.atText) {
                   repelLeaf(leaf, mouseX, mouseY);
               }
 
@@ -391,30 +392,28 @@
 
                 const leafRect = leaf.element.getBoundingClientRect();
 
-                // Text Collision - Modified for "laying down"
-                if (isColliding(leaf.element, textContainer)) {
-                    if (!leaf.atText) { // If just landed on text
+                // Text Collision
+               if (isColliding(leaf.element, textContainer)) {
+                    if (!leaf.atText) {
                         leaf.atText = true;
-                        leaf.vy = 0;     // Stop vertical movement
-                        leaf.vx = 0;     // Stop horizontal movement
-                        leaf.rotationSpeed = 0; // Stop rotation
-                        // Position the leaf *on top* of the text, not bouncing
+                        // Stop motion and rotation, *but allow slight horizontal drift*
+                        leaf.vy = 0;
+                        leaf.vx *= 0.1;  // Keep a small fraction of horizontal velocity
+                        leaf.rotationSpeed = 0;
                         leaf.y = textRect.top - leaf.size * 1.5;
                     }
                     leaf.textDuration++;
-
-                     // After staying on text for a while (e.g. 2-5 seconds).
                     if(leaf.textDuration > (2 + Math.random() * 3) * 60){
                         resetLeaf(leaf);
                     }
                 }
-                else {  // Not colliding with text
-                    leaf.atText = false; // Clear atText flag when not touching the text
+                else {
+                    leaf.atText = false;
                     leaf.textDuration = 0;
                 }
 
 
-                // Bottom barrier collision - No changes needed here, stays 3-12 seconds
+                // Bottom barrier collision
                 if (isColliding(leaf.element, bottomBarrier) || leaf.y + leaf.size * 1.5 >= window.innerHeight - 20) {
                     if (!leaf.atBottom) {
                         leaf.atBottom = true;
@@ -432,11 +431,14 @@
                     }
                 }
                else {
-                    if (!leaf.atBottom && !leaf.atText) { // Apply physics only if NOT at bottom AND NOT on text
+                    if (!leaf.atBottom && !leaf.atText) {
                       leaf.rotation += leaf.rotationSpeed;
                       leaf.vx *= 0.99;
                       leaf.x += leaf.vx;
                       leaf.y += leaf.vy;
+                    } else if (leaf.atText) { // Add this condition
+                        // Allow slow horizontal movement even when on text
+                        leaf.x += leaf.vx;
                     }
                }
 
