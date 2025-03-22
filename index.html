@@ -160,15 +160,15 @@
     </div>
 
     <script>
-        const numLeaves = 100; // Changed from 300 to 100
-        const windSpeed = 0.1;
+        const numLeaves = 60; // Changed from 300 to 100
+        const windSpeed = 0.05;
         const gravity = 0.05;
         const leafColors = ['color1', 'color2', 'color3', 'color4', 'color5', 'color6', 'color7', 'color8'];
         const repelRadius = 30; // Fix 3: Reduced from 60 to 30
         const leafRepelForce = 0.5;
         const blowerForce = 2;
         const blowerRadius = 100;
-        const maxLeafDistance = window.innerWidth * 1.5;
+        const maxLeafDistance = window.innerWidth * 1.2;
 
         const leaves = [];
         let animationFrameId = null;
