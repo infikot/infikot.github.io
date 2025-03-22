@@ -23,7 +23,7 @@
             border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
             transform-origin: 50% 0;
             opacity: 0.8;
-            transition: transform 0.2s ease-out, opacity: 0.5s ease-out;
+            transition: transform 0.2s ease-out, opacity 0.5s ease-out;
         }
 
         /* Leaf Colors */
@@ -105,23 +105,22 @@
         #telegram-container svg {
             width: 100%;
             height: 100%;
-            fill: black;
+            fill: white;
             transition: fill 0.3s;
         }
 
         #telegram-container:hover svg {
-            fill: #333;
+            fill: #ddd;
         }
 
-        /* Bottom Barrier - Transparent */
+        /* Bottom Barrier - Visible for debugging */
         #bottom-barrier {
             position: absolute;
-            bottom: -5px;
+            bottom: 0;
             left: 0;
             width: 100%;
             height: 20px;
-            background-color: transparent;
-            border-top: 5px solid transparent;
+            background-color: rgba(255, 255, 255, 0.1);
             z-index: 9;
         }
     </style>
@@ -157,7 +156,7 @@
             const randomColor = leafColors[Math.floor(Math.random() * leafColors.length)];
             leaf.classList.add(randomColor);
             const x = Math.random() * window.innerWidth;
-            const y = -50 - (Math.random() * 50); //  Start above the screen
+            const y = -50 - (Math.random() * 50); // Start above the screen
             const size = 10 + Math.random() * 15;
             leaf.style.width = `${size}px`;
             leaf.style.height = `${size * 1.5}px`;
@@ -175,7 +174,9 @@
                 vx: (Math.random() - 0.5) * windSpeed,
                 vy: 0,
                 size: size,
-                respawnTimer: null, // Add the respawn timer back
+                respawnTimer: null,
+                atBottom: false,
+                bottomDuration: 0,
             };
         }
 
@@ -200,6 +201,7 @@
                      rect1.bottom < rect2.top ||
                      rect1.top > rect2.bottom);
         }
+        
         // --- Reset Leaf ---
 
         function resetLeaf(leaf) {
@@ -209,10 +211,11 @@
             leaf.vy = 0;
             leaf.rotation = Math.random() * 360;
             leaf.rotationSpeed = 0;
-            leaf.element.style.opacity = 1; // Make it visible again
-             clearTimeout(leaf.respawnTimer);  // Clear any existing timer.
+            leaf.element.style.opacity = 0.8; // Make it visible again
+            leaf.atBottom = false;
+            leaf.bottomDuration = 0;
+            clearTimeout(leaf.respawnTimer);
             leaf.respawnTimer = null;
-
         }
 
         // --- Repulsion ---
@@ -229,14 +232,21 @@
                 leaf.element.classList.add("repelled");
             } else {
                 leaf.element.classList.remove("repelled");
-                leaf.rotationSpeed = 0;
+                if (!leaf.atBottom) {
+                    leaf.rotationSpeed = 0;
+                }
             }
         }
+        
         function repelLeavesFromEachOther() {
             for (let i = 0; i < leaves.length; i++) {
                 for (let j = i + 1; j < leaves.length; j++) {
                     const leaf1 = leaves[i];
                     const leaf2 = leaves[j];
+                    
+                    // Skip if either leaf is at the bottom
+                    if (leaf1.atBottom || leaf2.atBottom) continue;
+                    
                     const dx = leaf1.x - leaf2.x;
                     const dy = leaf1.y - leaf2.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -275,57 +285,70 @@
 
             const textContainer = document.getElementById('text-container');
             const bottomBarrier = document.getElementById('bottom-barrier');
+            
             // --- Leaf Updates ---
-
             const leafUpdates = [];
+            
             for (let i = 0; i < leaves.length; i++) {
                 const leaf = leaves[i];
-                 repelLeaf(leaf, mouseX, mouseY);
+                
+                // Only repel leaves that aren't at the bottom
+                if (!leaf.atBottom) {
+                    repelLeaf(leaf, mouseX, mouseY);
+                }
 
+                // Check collision with text container
                 let collidedWithOthers = false;
-
                 if (isColliding(leaf.element, textContainer)) {
                     collidedWithOthers = true;
                 }
-                for (let j = 0; j < leaves.length; j++) {
-                    if (i !== j && isColliding(leaf.element, leaves[j].element)) {
-                        collidedWithOthers = true;
-                        break; //  Exit if colliding with another leaf
+                
+                // Check collision with other leaves (only if not at bottom)
+                if (!leaf.atBottom) {
+                    for (let j = 0; j < leaves.length; j++) {
+                        if (i !== j && isColliding(leaf.element, leaves[j].element)) {
+                            collidedWithOthers = true;
+                            break;
+                        }
                     }
                 }
 
-                // Barrier Collision and Respawn
-                if (isColliding(leaf.element, bottomBarrier)) {
-                     leaf.vy = 0; // Stop vertical movement
-                     if (!leaf.respawnTimer) { // Only set the timer if it's not already running
-                        leaf.element.style.opacity = 0; // Make leaf invisible
-                        leaf.respawnTimer = setTimeout(() => {
-                             resetLeaf(leaf);
-                        }, 3000 + Math.random() * 7000); //  3 to 10 seconds
+                // Bottom barrier collision
+                if (isColliding(leaf.element, bottomBarrier) || leaf.y + leaf.size * 1.5 >= window.innerHeight - 20) {
+                    if (!leaf.atBottom) {
+                        leaf.atBottom = true;
+                        leaf.vy = 0;
+                        leaf.vx = 0;
+                        leaf.rotationSpeed = 0;
+                        
+                        // Position the leaf exactly on the barrier
+                        leaf.y = window.innerHeight - 20 - leaf.size * 1.5;
+                    }
+                    
+                    leaf.bottomDuration++;
+                    
+                    // After staying at bottom for 3-10 seconds (60-300 frames at 60fps)
+                    if (leaf.bottomDuration > (3 + Math.random() * 7) * 60) {
+                        resetLeaf(leaf);
+                    }
+                } else if (!leaf.atBottom) {
+                    // Normal physics for leaves not at bottom
+                    if (collidedWithOthers) {
+                        leaf.vy *= 0.9; // Slow down but don't completely stop
+                    } else {
+                        leaf.vy += gravity;
                     }
 
-                } else {
-                    //If leaf leaves barrier clear respawn timer.
-                     clearTimeout(leaf.respawnTimer);
-                    leaf.respawnTimer = null;
-                 }
-
-                if (collidedWithOthers) {
-                    leaf.vy = 0;
-                }
-                if (!collidedWithOthers) {
-                    leaf.vy += gravity;
+                    leaf.rotation += leaf.rotationSpeed;
+                    leaf.vx *= 0.99;
+                    leaf.vy *= 0.99;
+                    leaf.x += leaf.vx;
+                    leaf.y += leaf.vy;
                 }
 
-                leaf.rotation += leaf.rotationSpeed;
-                leaf.vx *= 0.99;
-                leaf.vy *= 0.99;
-                leaf.x += leaf.vx;
-                leaf.y += leaf.vy;
-
-                // Keep leaves within the horizontal bounds of the screen.
+                // Keep leaves within the horizontal bounds of the screen
                 if (leaf.x + leaf.size < 0) {
-                     leaf.x = window.innerWidth;
+                    leaf.x = window.innerWidth;
                 } else if (leaf.x > window.innerWidth) {
                     leaf.x = -leaf.size;
                 }
@@ -333,21 +356,23 @@
                 leafUpdates.push({
                     element: leaf.element,
                     transform: `rotate(${leaf.rotation}deg)`,
-                     left: `${leaf.x}px`,
+                    left: `${leaf.x}px`,
                     top: `${leaf.y}px`,
                 });
             }
+            
+            // Apply repulsion between leaves not at bottom
             repelLeavesFromEachOther();
 
+            // Apply all updates
             for (const update of leafUpdates) {
                 update.element.style.transform = update.transform;
-                 update.element.style.left = update.left;
+                update.element.style.left = update.left;
                 update.element.style.top = update.top;
             }
         }
 
         // --- Initialization ---
-
         initializeLeaves();
         animate();
 
@@ -360,7 +385,6 @@
         });
 
         // --- Text Dragging ---
-
         const textContainer = document.getElementById('text-container');
         let isDraggingText = false;
         let dragOffsetXText = 0;
@@ -369,42 +393,44 @@
 
         textContainer.addEventListener('mousedown', (event) => {
             isDraggingText = true;
-            dragOffsetXText = event.clientX - textContainer.offsetLeft;
-            dragOffsetYText = event.clientY - textContainer.offsetTop;
+            dragOffsetXText = event.clientX - textContainer.getBoundingClientRect().left;
+            dragOffsetYText = event.clientY - textContainer.getBoundingClientRect().top;
             textContainer.style.zIndex = ++textZIndex;
             event.stopPropagation();
         });
 
         document.addEventListener('mousemove', (event) => {
             if (isDraggingText) {
-                 //  No right-side restriction
-                const maxX = window.innerWidth - textContainer.offsetWidth;
+                // Allow movement without restrictions
                 let newX = event.clientX - dragOffsetXText;
                 let newY = event.clientY - dragOffsetYText;
-
-                //  Allow only left and top bounds
-                newX = Math.max(0, Math.min(newX, maxX));
-                newY = Math.max(0, Math.min(newY, window.innerHeight - textContainer.offsetHeight));
+                
+                // Only enforce top boundary
+                newY = Math.max(0, newY);
+                
                 textContainer.style.left = `${newX}px`;
-                 textContainer.style.top = `${newY}px`;
+                textContainer.style.top = `${newY}px`;
+                
+                // Remove the transform that was initially centering the text
+                textContainer.style.transform = 'none';
             }
         });
-         document.addEventListener('mouseup', () => {
+        
+        document.addEventListener('mouseup', () => {
             isDraggingText = false;
         });
 
         textContainer.addEventListener('dragstart', (e) => e.preventDefault());
 
         // --- Prevent Dragging into Telegram Area ---
-
         const telegramContainer = document.getElementById('telegram-container');
-         telegramContainer.addEventListener('mousedown', (event) => {
+        telegramContainer.addEventListener('mousedown', (event) => {
             event.stopPropagation();
         });
+        
         telegramContainer.addEventListener('selectstart', (event) => {
             event.preventDefault();
         });
-
     </script>
 </body>
 </html>
