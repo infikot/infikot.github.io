@@ -123,6 +123,23 @@
             background-color: rgba(255, 255, 255, 0.1);
             z-index: 9;
         }
+        
+        /* Air blower style */
+        #air-blower {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            z-index: 100;
+            pointer-events: none;
+            display: none;
+            transform: rotate(-90deg); /* Point upward by default */
+            transition: transform 0.2s ease-out;
+        }
+        
+        #air-blower img {
+            width: 100%;
+            height: 100%;
+        }
     </style>
 </head>
 <body>
@@ -136,17 +153,27 @@
     </a>
 
     <div id="bottom-barrier"></div>
+    
+    <!-- Air blower element -->
+    <div id="air-blower">
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAENElEQVR4nO2aa4hVVRTHf4Oa+BgfqKSjkkIqKKhJ9s23IDglqZWQfUhB+6b1oQQdScurYJCPD4L4SCKLHuKgVoLkQPpBLB8j+EUFE5EUTGxGzWcnFvwvbE7n3jn3jNe55+7zh/Nhzln7zlr/vfZaa6+9IUOGDBlKwwRgHdAEXAPuAXeAC8Ax4DtgC7AKeBeYDYwHBgGdSDFmAr8DQTueJ8CfwFngR+ALIAcsA94CJgEjgR5UEHoAXzlG3AR2AK9K2W5AT2CUDFgALAfWA3uAn4BmGf6kBLLMqy7Kq74HtgINwCKgHnjpWXjV88A5KXQXWCtjk6IzUKdlVC9jGmTcD8Bx4JL+V6le1Syy94j8ZZqMSZqckvXuI1e1f3IFGMezRW2EV22QgT9rYq4D/5ZA1uFSFPjaMd5mrVIR9qrFwGrH6ONaSvm/Y2GO4/YWwcMYCHwqD/kHaAHO6N0AKgNhg2MTUCNjTPiTiO8Wrf8u4mb2bT4pJmCyE+17RRifj+SNwBRlCXumAgecwDSvwO+fjCDNIn3FELBJgjsjMkKLvq0oMn6lZG4XWA4nIgj4lQoi4JQELQ64WOfMfFs4JFlLmx2FRATUqAAxwRdD35r15ty+LUyX7GlSRkA3RzBcOLQWeB+FXpK1JVNs7ZczFiQioHsRAu6WQECtkxGKrf1yxoLES6BVgiNC3/IlsUX7uEvANk8dhcRB8LQEXw+9z+m9pbq4QfBjUkjA5xLcVSQNWqorhAYnDfZPYx0wRYK3gN6hb286m4+DwDTFhJ5y+0NOIRT2oNTUATVOKWxuH8YbbZTCNvNz6XgkJsDdDFm762X+jwHaJ5xS0GxRwFsD9KMy0C4CDN9owFVgMOlDuwmodcpia36+gmcE5CN/4CyHXERgLBe6AH2BYcBoYKIasxZc3waWAh8q1W4EtgN7gf3AEUfvywroiQggIsjZj+1WoBulrbCr7Jgiyq4poKylxvOOsg9jVI1JHusZloxAz4yY5ezTeh6JjD9Ezm8iq1HtOiPxM5H6kUheqImZqSVrkzFck/NcEuOJcJ2xan0dcQ5G8spedpS9qXFHHWXXllvZciBIuHYaC5TUqUOQkIC9Gmcz7SUBOzRuCZ4SsFnj3sdTAnIxdo5VTcAqjbNmqpcEfKBx1l/wkoClGmc1gJcEvKNx3+IpAe9p3DY8JWBjBTRGO4yAGu0J4rbRq46Aec7lCtsqpxqtMibuLZGhwA2NsTiQejTFOBLPY4JmPdA1OFsKqcdrMuiBSKiLaJvNUrp7LNkmXbKqGuRidnHu6yZXV6oQ9cAvzvFY/rmhoy2r/V/AI7SIgCF4in1Op9VLEkYCf4WWwx0FQAucXmAI8K0ORMMBMepgtepRp1T5QCRY4PQSK0SAZQ0vMTDilph3CJIeRlYLgowAMg8I8BjHynT7K0OGDBl4WvgPxpwq8mtw09gAAAAASUVORK5CYII=" alt="Air Blower">
+    </div>
 
     <script>
         const numLeaves = 300;
         const windSpeed = 0.2;
         const gravity = 0.1;
         const leafColors = ['color1', 'color2', 'color3', 'color4', 'color5', 'color6', 'color7', 'color8'];
-        const repelRadius = 60;
+        const repelRadius = 30; // Fix 3: Reduced from 60 to 30
         const leafRepelForce = 0.5;
+        const blowerForce = 2;
+        const blowerRadius = 100;
+        const maxLeafDistance = window.innerWidth * 1.5;
 
         const leaves = [];
         let animationFrameId = null;
+        let isBlowing = false;
+        let blowerAngle = -90; // Default pointing up
 
         // --- Leaf Creation ---
 
@@ -172,7 +199,7 @@
                 rotation: initialRotation,
                 rotationSpeed: 0,
                 vx: (Math.random() - 0.5) * windSpeed,
-                vy: 0,
+                vy: 0.5 + Math.random() * 0.5, // Fix 1: Initial downward velocity
                 size: size,
                 respawnTimer: null,
                 atBottom: false,
@@ -208,7 +235,7 @@
             leaf.x = Math.random() * window.innerWidth;
             leaf.y = -50 - (Math.random() * 50); // Reset just above the top of the screen
             leaf.vx = (Math.random() - 0.5) * windSpeed;
-            leaf.vy = 0;
+            leaf.vy = 0.5 + Math.random() * 0.5; // Fix 1: Add initial downward velocity
             leaf.rotation = Math.random() * 360;
             leaf.rotationSpeed = 0;
             leaf.element.style.opacity = 0.8; // Make it visible again
@@ -235,6 +262,31 @@
                 if (!leaf.atBottom) {
                     leaf.rotationSpeed = 0;
                 }
+            }
+        }
+        
+        // --- Air Blower Function ---
+        function blowLeaves(leaf, blowerX, blowerY) {
+            const dx = leaf.x - blowerX;
+            const dy = leaf.y - blowerY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < blowerRadius) {
+                // Calculate direction based on blower angle
+                const blowerRadians = (blowerAngle) * Math.PI / 180;
+                const blowForceX = Math.cos(blowerRadians) * blowerForce;
+                const blowForceY = Math.sin(blowerRadians) * blowerForce;
+                
+                // Calculate force reduction based on distance
+                const forceMultiplier = 1 - (distance / blowerRadius);
+                
+                // Apply forces
+                leaf.vx += blowForceX * forceMultiplier;
+                leaf.vy += blowForceY * forceMultiplier;
+                leaf.rotationSpeed += (Math.random() - 0.5) * blowerForce * 0.5 * forceMultiplier;
+                
+                // Mark as repelled for visual effect
+                leaf.element.classList.add("repelled");
             }
         }
         
@@ -267,12 +319,61 @@
         }
 
         // --- Mouse Position ---
-
         let mouseX = 0;
         let mouseY = 0;
         document.addEventListener('mousemove', (event) => {
             mouseX = event.clientX;
             mouseY = event.clientY;
+            
+            // Update air blower position
+            if (isBlowing) {
+                const airBlower = document.getElementById('air-blower');
+                airBlower.style.left = `${mouseX - 20}px`;
+                airBlower.style.top = `${mouseY - 20}px`;
+            }
+        });
+
+        // Add right-click handler for air blower
+        document.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+            isBlowing = true;
+            
+            // Show the air blower
+            const airBlower = document.getElementById('air-blower');
+            airBlower.style.display = 'block';
+            airBlower.style.left = `${mouseX - 20}px`;
+            airBlower.style.top = `${mouseY - 20}px`;
+        });
+        
+        // Add mouse move handler while right-clicking to rotate the blower
+        document.addEventListener('mousemove', (event) => {
+            if (isBlowing) {
+                // Calculate angle based on mouse movement
+                const movementX = event.movementX;
+                const movementY = event.movementY;
+                
+                if (Math.abs(movementX) > 1 || Math.abs(movementY) > 1) {
+                    // Calculate new angle (convert from 180° to 360° system)
+                    blowerAngle = Math.atan2(movementY, movementX) * 180 / Math.PI;
+                    
+                    // Rotate the air blower icon
+                    const airBlower = document.getElementById('air-blower');
+                    airBlower.style.transform = `rotate(${blowerAngle}deg)`;
+                }
+            }
+        });
+
+        // Handle mouse up to stop air blower
+        document.addEventListener('mouseup', (event) => {
+            if (event.button === 2) { // Right mouse button
+                isBlowing = false;
+                const airBlower = document.getElementById('air-blower');
+                airBlower.style.display = 'none';
+                
+                // Reset blower angle to point upward for next use
+                blowerAngle = -90;
+                airBlower.style.transform = `rotate(${blowerAngle}deg)`;
+            }
         });
 
         // --- Animation Loop ---
@@ -284,6 +385,7 @@
             }
 
             const textContainer = document.getElementById('text-container');
+            const textRect = textContainer.getBoundingClientRect();
             const bottomBarrier = document.getElementById('bottom-barrier');
             
             // --- Leaf Updates ---
@@ -295,21 +397,69 @@
                 // Only repel leaves that aren't at the bottom
                 if (!leaf.atBottom) {
                     repelLeaf(leaf, mouseX, mouseY);
+                    
+                    // Apply air blower effect if active
+                    if (isBlowing) {
+                        blowLeaves(leaf, mouseX, mouseY);
+                    }
                 }
 
-                // Check collision with text container
-                let collidedWithOthers = false;
-                if (isColliding(leaf.element, textContainer)) {
-                    collidedWithOthers = true;
+                // Check if leaf is too far away
+                const distance = Math.sqrt(
+                    Math.pow(leaf.x - window.innerWidth/2, 2) + 
+                    Math.pow(leaf.y - window.innerHeight/2, 2)
+                );
+                
+                if (distance > maxLeafDistance) {
+                    resetLeaf(leaf);
+                }
+
+                // Check collision with text container (Fix 2)
+                const leafRect = leaf.element.getBoundingClientRect();
+                if (leafRect.right > textRect.left && 
+                    leafRect.left < textRect.right &&
+                    leafRect.bottom > textRect.top && 
+                    leafRect.top < textRect.bottom) {
+                    
+                    // Determine which side of the text container the leaf is closest to
+                    const leftDist = Math.abs(leafRect.right - textRect.left);
+                    const rightDist = Math.abs(leafRect.left - textRect.right);
+                    const topDist = Math.abs(leafRect.bottom - textRect.top);
+                    const bottomDist = Math.abs(leafRect.top - textRect.bottom);
+                    
+                    const minDist = Math.min(leftDist, rightDist, topDist, bottomDist);
+                    
+                    // Bounce away from text container
+                    if (minDist === leftDist) {
+                        leaf.x = textRect.left - leaf.size - 1;
+                        leaf.vx = -Math.abs(leaf.vx) - 0.5;
+                    } else if (minDist === rightDist) {
+                        leaf.x = textRect.right + 1;
+                        leaf.vx = Math.abs(leaf.vx) + 0.5;
+                    } else if (minDist === topDist) {
+                        leaf.y = textRect.top - leaf.size * 1.5 - 1;
+                        leaf.vy = -Math.abs(leaf.vy) - 0.5;
+                    } else if (minDist === bottomDist) {
+                        leaf.y = textRect.bottom + 1;
+                        leaf.vy = Math.abs(leaf.vy) + 0.5;
+                    }
+                    
+                    // Slight rotation effect on collision
+                    leaf.rotationSpeed = (Math.random() - 0.5) * 5;
                 }
                 
                 // Check collision with other leaves (only if not at bottom)
                 if (!leaf.atBottom) {
+                    let collidedWithOthers = false;
                     for (let j = 0; j < leaves.length; j++) {
-                        if (i !== j && isColliding(leaf.element, leaves[j].element)) {
+                        if (i !== j && !leaves[j].atBottom && isColliding(leaf.element, leaves[j].element)) {
                             collidedWithOthers = true;
                             break;
                         }
+                    }
+                    
+                    if (collidedWithOthers) {
+                        leaf.vy *= 0.9; // Slow down but don't completely stop
                     }
                 }
 
@@ -333,12 +483,7 @@
                     }
                 } else if (!leaf.atBottom) {
                     // Normal physics for leaves not at bottom
-                    if (collidedWithOthers) {
-                        leaf.vy *= 0.9; // Slow down but don't completely stop
-                    } else {
-                        leaf.vy += gravity;
-                    }
-
+                    leaf.vy += gravity;
                     leaf.rotation += leaf.rotationSpeed;
                     leaf.vx *= 0.99;
                     leaf.vy *= 0.99;
@@ -369,6 +514,33 @@
                 update.element.style.transform = update.transform;
                 update.element.style.left = update.left;
                 update.element.style.top = update.top;
+            }
+            
+            // Move the text if air blower is active and close to the text
+            if (isBlowing) {
+                const textRect = textContainer.getBoundingClientRect();
+                const textCenterX = textRect.left + textRect.width / 2;
+                const textCenterY = textRect.top + textRect.height / 2;
+                const distToText = Math.sqrt(
+                    Math.pow(mouseX - textCenterX, 2) + 
+                    Math.pow(mouseY - textCenterY, 2)
+                );
+                
+                if (distToText < blowerRadius * 1.5) {
+                    // Calculate direction based on blower angle
+                    const blowerRadians = (blowerAngle) * Math.PI / 180;
+                    const blowForceX = Math.cos(blowerRadians) * 0.3;
+                    const blowForceY = Math.sin(blowerRadians) * 0.3;
+                    
+                    // Get current position
+                    const currentX = parseInt(textContainer.style.left) || textRect.left;
+                    const currentY = parseInt(textContainer.style.top) || textRect.top;
+                    
+                    // Apply movement
+                    textContainer.style.left = `${currentX + blowForceX}px`;
+                    textContainer.style.top = `${currentY + blowForceY}px`;
+                    textContainer.style.transform = 'none';
+                }
             }
         }
 
