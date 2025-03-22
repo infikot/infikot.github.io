@@ -160,7 +160,7 @@
     </div>
 
     <script>
-        const numLeaves = 300;
+        const numLeaves = 100; // Changed from 300 to 100
         const windSpeed = 0.2;
         const gravity = 0.1;
         const leafColors = ['color1', 'color2', 'color3', 'color4', 'color5', 'color6', 'color7', 'color8'];
@@ -365,6 +365,19 @@
 
         // Handle mouse up to stop air blower
         document.addEventListener('mouseup', (event) => {
+            if (event.button === 2) { // Right mouse button
+                isBlowing = false;
+                const airBlower = document.getElementById('air-blower');
+                airBlower.style.display = 'none';
+                
+                // Reset blower angle to point upward for next use
+                blowerAngle = -90;
+                airBlower.style.transform = `rotate(${blowerAngle}deg)`;
+            }
+        });
+
+        // Add window-level mouseup event to ensure it catches right-click release outside the document
+        window.addEventListener('mouseup', (event) => {
             if (event.button === 2) { // Right mouse button
                 isBlowing = false;
                 const airBlower = document.getElementById('air-blower');
@@ -595,14 +608,14 @@
         textContainer.addEventListener('dragstart', (e) => e.preventDefault());
 
         // --- Prevent Dragging into Telegram Area ---
-        const telegramContainer = document.getElementById('telegram-container');
-        telegramContainer.addEventListener('mousedown', (event) => {
-            event.stopPropagation();
-        });
-        
-        telegramContainer.addEventListener('selectstart', (event) => {
-            event.preventDefault();
-        });
-    </script>
+       const telegramContainer = document.getElementById('telegram-container');
+       telegramContainer.addEventListener('mousedown', (event) => {
+           event.stopPropagation();
+       });
+       
+       telegramContainer.addEventListener('selectstart', (event) => {
+           event.preventDefault();
+       });
+   </script>
 </body>
 </html>
