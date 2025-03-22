@@ -47,9 +47,9 @@
 
         /* Special Toggle Leaf */
         .leaf.toggle-leaf {
-            background-color: #ffeb3b;
-            opacity: 0.6;
-            box-shadow: 0 0 10px rgba(255, 235, 59, 0.5);
+            background-color: #c0c0c0;
+            opacity: 0.8;
+            box-shadow: 0 0 10px rgba(192, 192, 192, 0.7);
         }
 
         /* Leaf Glow */
@@ -177,6 +177,7 @@
         const repelRadius = 30;
         const leafRepelForce = 0.5;
         const maxLeafDistance = window.innerWidth * 1.2;
+        const constantFallSpeed = 0.05; // Constant falling speed for all leaves
 
         const leaves = [];
         let toggleLeaf = null;
@@ -191,16 +192,20 @@
             
             if (isToggleLeaf) {
                 leaf.classList.add('toggle-leaf');
+                // Make toggle leaf larger (medium size)
+                const size = 20;
+                leaf.style.width = `${size}px`;
+                leaf.style.height = `${size * 1.5}px`;
             } else {
                 const randomColor = leafColors[Math.floor(Math.random() * leafColors.length)];
                 leaf.classList.add(randomColor);
+                const size = 10 + Math.random() * 15;
+                leaf.style.width = `${size}px`;
+                leaf.style.height = `${size * 1.5}px`;
             }
             
             const x = Math.random() * window.innerWidth;
             const y = -50 - (Math.random() * 50); // Start above the screen
-            const size = 10 + Math.random() * 15;
-            leaf.style.width = `${size}px`;
-            leaf.style.height = `${size * 1.5}px`;
             const initialRotation = Math.random() * 360;
             leaf.style.transform = `rotate(${initialRotation}deg)`;
             leaf.style.left = `${x}px`;
@@ -213,8 +218,8 @@
                 rotation: initialRotation,
                 rotationSpeed: 0,
                 vx: (Math.random() - 0.5) * windSpeed,
-                vy: 0.5 + Math.random() * 0.5, // Consistent initial downward velocity
-                size: size,
+                vy: constantFallSpeed, // Use constant falling speed
+                size: isToggleLeaf ? 20 : (10 + Math.random() * 15), // Store the size
                 respawnTimer: null,
                 atBottom: false,
                 bottomDuration: 0,
@@ -273,10 +278,10 @@
             leaf.x = Math.random() * window.innerWidth;
             leaf.y = -50 - (Math.random() * 50); // Reset just above the top of the screen
             leaf.vx = (Math.random() - 0.5) * windSpeed;
-            leaf.vy = 0.5 + Math.random() * 0.5; // Consistent initial downward velocity 
+            leaf.vy = constantFallSpeed; // Reset to constant fall speed
             leaf.rotation = Math.random() * 360;
             leaf.rotationSpeed = 0;
-            leaf.element.style.opacity = leaf.isToggleLeaf ? 0.6 : 0.8; // Make it visible again
+            leaf.element.style.opacity = leaf.isToggleLeaf ? 0.8 : 0.8; // Make it visible again
             leaf.atBottom = false;
             leaf.bottomDuration = 0;
             clearTimeout(leaf.respawnTimer);
@@ -298,10 +303,17 @@
                 const repelForce = (1 - distance / repelRadius) * 2;
                 leaf.rotationSpeed = (dx > 0 ? 0.5 : -0.5) * repelForce * 0.2;
                 leaf.vx += (dx / distance) * repelForce;
-                leaf.vy += (dy / distance) * repelForce;
+                // Keep vertical speed constant
+                if (dy < 0) {
+                    leaf.vy = constantFallSpeed; // Maintain constant fall speed
+                } else {
+                    leaf.vy = -constantFallSpeed; // Allow upward movement but at constant speed
+                }
                 leaf.element.classList.add("repelled");
             } else {
                 leaf.element.classList.remove("repelled");
+                // Reset to constant fall speed when not repelled
+                leaf.vy = constantFallSpeed;
                 if (!leaf.atBottom) {
                     leaf.rotationSpeed = 0;
                 }
@@ -327,10 +339,14 @@
                         const force = overlap * leafRepelForce;
                         const nx = dx / distance;
                         const ny = dy / distance;
+                        
+                        // Only adjust horizontal velocity
                         leaf1.vx += nx * force;
-                        leaf1.vy += ny * force;
                         leaf2.vx -= nx * force;
-                        leaf2.vy -= ny * force;
+                        
+                        // Maintain constant fall speed regardless of collision
+                        leaf1.vy = constantFallSpeed;
+                        leaf2.vy = constantFallSpeed;
                     }
                 }
             }
@@ -401,31 +417,17 @@
                         leaf.vx = Math.abs(leaf.vx) + 0.5;
                     } else if (minDist === topDist) {
                         leaf.y = textRect.top - leaf.size * 1.5 - 1;
-                        leaf.vy = -Math.abs(leaf.vy) - 0.5;
+                        // Allow upward bounce but maintain constant speed after
+                        leaf.vy = -constantFallSpeed;
                     } else if (minDist === bottomDist) {
                         leaf.y = textRect.bottom + 1;
-                        leaf.vy = Math.abs(leaf.vy) + 0.5;
+                        leaf.vy = constantFallSpeed;
                     }
                     
                     // Slight rotation effect on collision
                     leaf.rotationSpeed = (Math.random() - 0.5) * 5;
                 }
                 
-                // Check collision with other leaves (only if not at bottom)
-                if (!leaf.atBottom) {
-                    let collidedWithOthers = false;
-                    for (let j = 0; j < leaves.length; j++) {
-                        if (i !== j && !leaves[j].atBottom && isColliding(leaf.element, leaves[j].element)) {
-                            collidedWithOthers = true;
-                            break;
-                        }
-                    }
-                    
-                    if (collidedWithOthers) {
-                        leaf.vy *= 0.9; // Slow down but don't completely stop
-                    }
-                }
-
                 // Bottom barrier collision
                 if (isColliding(leaf.element, bottomBarrier) || leaf.y + leaf.size * 1.5 >= window.innerHeight - 20) {
                     if (!leaf.atBottom) {
@@ -445,11 +447,12 @@
                         resetLeaf(leaf);
                     }
                 } else if (!leaf.atBottom) {
+                    // Always maintain constant fall speed for non-bottom leaves
+                    leaf.vy = constantFallSpeed;
+                    
                     // Normal physics for leaves not at bottom
-                    leaf.vy += gravity;
                     leaf.rotation += leaf.rotationSpeed;
-                    leaf.vx *= 0.99;
-                    leaf.vy *= 0.99;
+                    leaf.vx *= 0.99; // Slight air resistance horizontally
                     leaf.x += leaf.vx;
                     leaf.y += leaf.vy;
                 }
