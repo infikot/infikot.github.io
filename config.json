@@ -1,8 +1,17 @@
 {
+  "pageInfo": {
+    "subtitle": {
+      "ru": "Коллекция моих странных проектов",
+      "en": "A collection of my weird projects"
+    }
+  },
   "projects": [
     {
       "name": "office-oracle",
-      "description": "Ever wonder if it's a good time to ping your favorite colleague with a \"quick question\"? Is it safe to interrupt their deep focus, or are they just staring blankly at the screen after lunch?"
+      "description": {
+        "ru": "Хочешь узнать, можно ли сейчас дёрнуть коллегу по \"быстрому вопросу\"? Этот Оракул даст ответ.",
+        "en": "Ever wonder if it's a good time to ping your colleague? This Oracle will give you the answer."
+      }
     }
   ]
 }
