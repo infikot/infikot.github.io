@@ -12,6 +12,13 @@
         "ru": "Хочешь узнать, можно ли сейчас дёрнуть коллегу по \"быстрому вопросу\"? Этот Оракул даст ответ.",
         "en": "Ever wonder if it's a good time to ping your favorite colleague? This Oracle will give you the answer."
       }
+    },
+    {
+      "name": "wheel-of-decisions",
+      "description": {
+        "ru": "Не можешь решить, что съесть или какой баг исправить первым? Вращай колесо и позволь судьбе решить за тебя.",
+        "en": "Can't decide what to eat or which bug to fix first? Spin the wheel and let fate take the driver's seat."
+      }
     }
   ]
 }
