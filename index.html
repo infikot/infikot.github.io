@@ -3,511 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>infikot.github.io</title>
+    <title>infikot's Lab</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+        :root {
+            --bg-color: #121212;
+            --primary-text-color: #e0e0e0;
+            --secondary-text-color: #b0b0b0;
+            --card-bg: #1e1e1e;
+            --card-border: #333;
+            --card-hover-border: #007bff;
+            --font-family: 'Inter', sans-serif;
+        }
+
         body {
+            background-color: var(--bg-color);
+            color: var(--primary-text-color);
+            font-family: var(--font-family);
             margin: 0;
-            overflow: hidden;
-            background: linear-gradient(to bottom, #355c7d, #6c5b7b, #c06c84);
-            height: 100vh;
-            cursor: pointer;
-            font-family: 'Arial', sans-serif;
-            transition: background 0.5s ease;
+            padding: 40px 20px;
         }
 
-        body.dark-theme {
-            /* Dark Theme Gradient: Purple-Black */
-            background: linear-gradient(to bottom, #4a004a, #1a001a, #000000);
-        }
-
-        .leaf {
-            position: absolute;
-            pointer-events: all;
-            width: 20px;
-            height: 30px;
-            background-color: #e67e22;
-            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-            transform-origin: 50% 0;
-            opacity: 0.8;
-            transition: transform 0.2s ease-out, opacity 0.5s ease-out;
-        }
-
-        /* Leaf Colors */
-        .leaf.color1 { background-color: #e67e22; }
-        .leaf.color2 { background-color: #d35400; }
-        .leaf.color3 { background-color: #c0392b; }
-        .leaf.color4 { background-color: #f1c40f; }
-        .leaf.color5 { background-color: #e98b39; }
-        .leaf.color6 { background: radial-gradient(ellipse at center, #f39c12 0%, #e67e22 70%); }
-        .leaf.color7 { background-color: #9b59b6; }
-        .leaf.color8 { background-color: #8e44ad; }
-
-        .leaf.repelled {
-            opacity: 0.6;
-        }
-
-        /* Special Toggle Leaf */
-        .leaf.toggle-leaf {
-            background-color: #c0c0c0;
-            opacity: 0.8;
-            box-shadow: 0 0 10px rgba(192, 192, 192, 0.7);
-        }
-
-        /* Leaf Glow */
-        .leaf::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            width: calc(100% + 4px);
-            height: calc(100% + 4px);
-            border-radius: inherit;
-            box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .leaf:hover::before {
-            opacity: 1;
-        }
-
-        /* Glowing Leaves in Dark Theme */
-        body.dark-theme .leaf {
-            animation: glow 3s infinite alternate;
-        }
-
-        @keyframes glow {
-            0% {
-                box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-            }
-            100% {
-                box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 30px rgba(255, 255, 255, 0.6);
-            }
-        }
-
-        #text-container {
-            position: absolute;
-            color: white;
-            font-size: 2em;
-            z-index: 10;
-            white-space: pre-line;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            user-select: none;
-            cursor: move;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: auto;
-            height: auto;
-            box-sizing: border-box;
-            line-height: 1.2;
-            padding: 0.2em 0.5em;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
             text-align: center;
-            border: 2px solid transparent;
-            transition: color 0.5s ease;
         }
 
-        body.dark-theme #text-container {
-            color: #f8f8f8;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        header h1 {
+            font-size: 3rem;
+            font-weight: 900;
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            color: var(--secondary-text-color);
+            margin-top: -1rem;
         }
 
-        /* Invisible Collision Border for Text */
-        #text-container::before {
-            content: '';
-            position: absolute;
-            top: -5px;
-            left: -5px;
-            right: -5px;
-            bottom: -5px;
-            border: 5px solid transparent;
-            pointer-events: none;
+        #projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 50px;
+            text-align: left;
         }
 
-        #telegram-container {
-            position: absolute;
-            right: 10%;
-            bottom: 10%;
-            width: 2em;
-            height: 2em;
-            cursor: pointer;
-            z-index: 10;
+        .project-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 25px;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: transform 0.2s ease, border-color 0.2s ease;
         }
 
-        #telegram-container svg {
-            width: 100%;
-            height: 100%;
-            fill: white;
-            transition: fill 0.3s;
+        .project-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--card-hover-border);
         }
 
-        #telegram-container:hover svg {
-            fill: #ddd;
+        .project-card h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-text-color);
         }
 
-        /* Bottom Barrier - Visible for debugging */
-        #bottom-barrier {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 20px;
-            background-color: rgba(255, 255, 255, 0.1);
-            z-index: 9;
+        .project-card p {
+            font-size: 1rem;
+            color: var(--secondary-text-color);
+            line-height: 1.5;
         }
+
+        #loading-message, #error-message {
+            color: var(--secondary-text-color);
+            font-size: 1.2rem;
+        }
+
+        footer {
+            margin-top: 50px;
+            color: var(--secondary-text-color);
+            font-size: 0.9rem;
+        }
+
     </style>
 </head>
 <body>
+    <div class="container">
+        <header>
+            <h1>infikot's Lab</h1>
+            <p>Коллекция моих безумных экспериментов и смешнявок</p>
+        </header>
 
-    <div id="text-container" draggable="true">Hey, i'm a Daniel and this is a "test" page (use pc version)</div>
+        <main id="projects-grid">
+            <p id="loading-message">Загружаю проекты с GitHub API...</p>
+            <p id="error-message" style="display: none;"></p>
+        </main>
 
-    <a id="telegram-container" href="https://t.me/infinite_edit" target="_blank" style="pointer-events: auto;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 16 16">
-            <path fill="currentColor" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.287 5.906c-.778.324-2.334.994-4.666 2.01c-.378.15-.577.298-.595.442c-.03.243.275.339.69.47l.175.055c.408.133.958.288 1.243.294c.26.006.549-.1.868-.32c2.179-1.471 3.304-2.214 3.374-2.23c.05-.012.12-.026.166.016c.047.041.042.12.037.141c-.03.129-1.227 1.241-1.846 1.817c-.193.18-.33.307-.358.336a8.154 8.154 0 0 1-.188.186c-.38.366-.664.64.015 1.088c.327.216.589.393.85.571c.284.194.568.387.936.629c.093.06.183.125.27.187c.331.236.63.448.997.414c.214-.02.435-.22.547-.82c.265-1.417.786-4.486.906-5.751a1.426 1.426 0 0 0-.013-.315a.337.337 0 0 0-.114-.217a.526.526 0 0 0-.31-.093c-.3.005-.763.166-2.984 1.09z"/>
-        </svg>
-    </a>
-
-    <div id="bottom-barrier"></div>
+        <footer>
+            Сделано с помощью магии и GitHub API
+        </footer>
+    </div>
 
     <script>
-        const numLeaves = 30;
-        const windSpeed = 0.3;
-        const gravity = 0.2;
-        const leafColors = ['color1', 'color2', 'color3', 'color4', 'color5', 'color6', 'color7', 'color8'];
-        const repelRadius = 50;
-        const leafRepelForce = 0.7;
-        const maxLeafDistance = window.innerWidth * 1.2;
-        const constantFallSpeed = 0.4;
+        const USERNAME = 'infikot';
+        // !!! ВАЖНО: Придумай и используй этот тег для своих проектов
+        const TOPIC_TO_FILTER = 'fun-project'; 
 
-        const leaves = [];
-        let toggleLeaf = null;
-        let animationFrameId = null;
-        let isDarkTheme = false;
-        let leafCreationIntervalId = null;
+        const grid = document.getElementById('projects-grid');
+        const loadingMessage = document.getElementById('loading-message');
+        const errorMessage = document.getElementById('error-message');
 
-        // --- Leaf Creation ---
-
-        function createLeaf(isToggleLeaf = false) {
-            const leaf = document.createElement('div');
-            leaf.classList.add('leaf');
-
-            if (isToggleLeaf) {
-                leaf.classList.add('toggle-leaf');
-                const size = 20;
-                leaf.style.width = `${size}px`;
-                leaf.style.height = `${size * 1.5}px`;
-            } else {
-                const randomColor = leafColors[Math.floor(Math.random() * leafColors.length)];
-                leaf.classList.add(randomColor);
-                const size = 10 + Math.random() * 15;
-                leaf.style.width = `${size}px`;
-                leaf.style.height = `${size * 1.5}px`;
-            }
-
-            const x = Math.random() * window.innerWidth;
-            const y = -50 - (Math.random() * 50);
-            const initialRotation = Math.random() * 360;
-            leaf.style.transform = `rotate(${initialRotation}deg)`;
-            leaf.style.left = `${x}px`;
-            leaf.style.top = `${y}px`;
-
-            return {
-                element: leaf,
-                x: x,
-                y: y,
-                rotation: initialRotation,
-                rotationSpeed: 0,
-                vx: (Math.random() - 0.5) * windSpeed,
-                vy: constantFallSpeed,
-                size: isToggleLeaf ? 20 : (10 + Math.random() * 15),
-                respawnTimer: null,
-                atBottom: false,
-                atText: false,
-                bottomDuration: 0,
-                textDuration: 0,
-                isToggleLeaf: isToggleLeaf
-            };
-        }
-
-        function initializeLeaves() {
-            toggleLeaf = createLeaf(true);
-            leaves.push(toggleLeaf);
-            document.body.appendChild(toggleLeaf.element);
-            toggleLeaf.element.addEventListener('click', (event) => {
-                event.stopPropagation();
-                toggleDarkTheme();
-            });
-
-            let i = 0;
-            leafCreationIntervalId = setInterval(() => {
-                if (i < numLeaves) {
-                    const leaf = createLeaf();
-                    leaves.push(leaf);
-                    document.body.appendChild(leaf.element);
-                    i++;
-                } else {
-                    clearInterval(leafCreationIntervalId);
+        async function fetchProjects() {
+            try {
+                const response = await fetch(`https://api.github.com/users/${USERNAME}/repos?sort=updated&per_page=100`);
+                if (!response.ok) {
+                    throw new Error(`Ошибка сети: ${response.status} - ${response.statusText}`);
                 }
-            }, 100);
-        }
+                const repos = await response.json();
+                
+                const funProjects = repos.filter(repo => 
+                    repo.topics.includes(TOPIC_TO_FILTER) &&
+                    repo.name !== `${USERNAME}.github.io`
+                );
 
-        // --- Toggle Dark Theme ---
-        function toggleDarkTheme() {
-            isDarkTheme = !isDarkTheme;
-            document.body.classList.toggle('dark-theme', isDarkTheme);
-        }
+                loadingMessage.style.display = 'none';
 
-        // --- Collision Detection ---
-
-        function isColliding(element1, element2) {
-            if (!element1 || !element2) return false;
-
-            const rect1 = element1.getBoundingClientRect();
-            const rect2 = element2.getBoundingClientRect();
-
-            return !(rect1.right < rect2.left ||
-                     rect1.left > rect2.right ||
-                     rect1.bottom < rect2.top ||
-                     rect1.top > rect2.bottom);
-        }
-
-        // --- Reset Leaf ---
-
-        function resetLeaf(leaf) {
-             if (!leaf) return;
-
-            leaf.x = Math.random() * window.innerWidth;
-            leaf.y = -50 - (Math.random() * 50);
-            leaf.vx = (Math.random() - 0.5) * windSpeed;
-            leaf.vy = constantFallSpeed;
-            leaf.rotation = Math.random() * 360;
-            leaf.rotationSpeed = 0;
-            leaf.element.style.opacity = leaf.isToggleLeaf ? 0.8 : 0.8;
-            leaf.atBottom = false;
-            leaf.atText = false;
-            leaf.bottomDuration = 0;
-            leaf.textDuration = 0;
-            clearTimeout(leaf.respawnTimer);
-            leaf.respawnTimer = null;
-            if (leaf.element) {
-                 leaf.element.classList.remove("repelled");
-            }
-        }
-
-        // --- Repulsion ---
-        function repelLeaf(leaf, mouseX, mouseY) {
-            if (leaf.isToggleLeaf) {
-                return;
-            }
-
-            const dx = leaf.x - mouseX;
-            const dy = leaf.y - mouseY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-             if (distance < repelRadius) {
-                const repelForce = (1 - distance / repelRadius) * leafRepelForce;
-                const angle = Math.atan2(dy, dx);
-
-                leaf.vx += Math.cos(angle) * repelForce;
-                leaf.vy += Math.sin(angle) * repelForce;
-
-                leaf.rotationSpeed = (dx > 0 ? 0.5 : -0.5) * repelForce * 0.2;
-                leaf.element.classList.add("repelled");
-
-            } else {
-                leaf.element.classList.remove("repelled");
-                if(!leaf.atBottom && !leaf.atText)
-                   leaf.vy = constantFallSpeed;
-
-            }
-        }
-
-        function repelLeavesFromEachOther() {
-            for (let i = 0; i < leaves.length; i++) {
-                for (let j = i + 1; j < leaves.length; j++) {
-                    const leaf1 = leaves[i];
-                    const leaf2 = leaves[j];
-
-                    if (leaf1.atBottom || leaf2.atBottom || leaf1.isToggleLeaf || leaf2.isToggleLeaf || leaf1.atText || leaf2.atText) continue;
-
-                    const dx = leaf1.x - leaf2.x;
-                    const dy = leaf1.y - leaf2.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    const minDistance = (leaf1.size + leaf2.size) / 2;
-
-                    if (distance < minDistance) {
-                        const overlap = minDistance - distance;
-                        const force = overlap * leafRepelForce;
-                        const nx = dx / distance;
-                        const ny = dy / distance;
-
-                        leaf1.vx += nx * force;
-                        leaf1.vy += ny * force;
-                        leaf2.vx -= nx * force;
-                        leaf2.vy -= ny * force;
-                    }
-                }
-            }
-        }
-        // --- Mouse Position ---
-        let mouseX = 0;
-        let mouseY = 0;
-
-        document.addEventListener('mousemove', (event) => {
-             mouseX = event.clientX;
-             mouseY = event.clientY;
-        });
-
-        // --- Animation Loop ---
-        function animate() {
-            animationFrameId = requestAnimationFrame(animate);
-
-            if (document.visibilityState !== 'visible') {
-                return;
-            }
-
-            const textContainer = document.getElementById('text-container');
-            const textRect = textContainer.getBoundingClientRect();
-            const bottomBarrier = document.getElementById('bottom-barrier');
-
-            const leafUpdates = [];
-              for (let i = 0; i < leaves.length; i++) {
-                const leaf = leaves[i];
-                 if (!leaf.atBottom && !leaf.atText) {
-                    repelLeaf(leaf, mouseX, mouseY);
+                if (funProjects.length === 0) {
+                    errorMessage.textContent = `Проекты с тегом "${TOPIC_TO_FILTER}" не найдены. Добавь тег к репозиториям!`;
+                    errorMessage.style.display = 'block';
+                    return;
                 }
 
-                const distance = Math.sqrt(Math.pow(leaf.x - window.innerWidth / 2, 2) + Math.pow(leaf.y - window.innerHeight / 2, 2));
-                if (distance > maxLeafDistance) {
-                    resetLeaf(leaf);
-                    continue;
-                }
+                funProjects.forEach(repo => {
+                    const card = document.createElement('a');
+                    card.className = 'project-card';
+                    // Формируем ссылку на GitHub Pages проекта
+                    card.href = `https://${USERNAME}.github.io/${repo.name}/`;
+                    card.target = '_self'; // Открывать в той же вкладке
 
-                // Text Collision
-                if (isColliding(leaf.element, textContainer)) {
-                    if (!leaf.atText) {
-                        leaf.atText = true;
-                        leaf.vy = 0;
-                        leaf.vx = 0; // Completely stop horizontal motion
-                        leaf.rotationSpeed = 0;
-                         // Correctly position leaf *on top* of the text
-                        leaf.y = textRect.top - leaf.element.getBoundingClientRect().height;
-                    }
-                     leaf.textDuration++;
-                    if (leaf.textDuration > (2 + Math.random() * 3) * 60) {
-                        resetLeaf(leaf);
-                    }
-                }
-                 else
-                {
-                    leaf.atText = false; // Reset atText when not colliding
-                    leaf.textDuration = 0;
-                 }
+                    const title = document.createElement('h2');
+                    title.textContent = repo.name;
 
-                // Bottom barrier collision
-                if (isColliding(leaf.element, bottomBarrier) || leaf.y + leaf.size * 1.5 >= window.innerHeight - 20) {
-                    if (!leaf.atBottom) {
-                        leaf.atBottom = true;
-                        leaf.vy = 0;
-                        leaf.vx = 0;
-                        leaf.rotationSpeed = 0;
-                        leaf.y = window.innerHeight - 20 - leaf.size * 1.5;
-                    }
-                    leaf.bottomDuration++;
-                    if (leaf.bottomDuration > (3 + Math.random() * 9) * 60) {
-                        resetLeaf(leaf);
-                    }
-                }
-                else
-                {
-                  if(!leaf.atText && !leaf.atBottom){ // Only apply if NOT on text AND NOT on bottom
-                     leaf.rotation += leaf.rotationSpeed;
-                     leaf.vx *= 0.99; // Apply air resistance
-                     leaf.x += leaf.vx; // Update x position
-                     leaf.y += leaf.vy; // Update y position
-                   }
-                }
-                 if (leaf.x + leaf.size < 0) {
-                    leaf.x = window.innerWidth;
-                } else if (leaf.x > window.innerWidth) {
-                    leaf.x = -leaf.size;
-                }
+                    const description = document.createElement('p');
+                    description.textContent = repo.description || 'Описания нет, но проект наверняка крутой.';
 
-                leafUpdates.push({
-                    element: leaf.element,
-                    transform: `rotate(${leaf.rotation}deg)`,
-                    left: `${leaf.x}px`,
-                    top: `${leaf.y}px`,
+                    card.appendChild(title);
+                    card.appendChild(description);
+                    grid.appendChild(card);
                 });
+
+            } catch (error) {
+                console.error('Не удалось загрузить проекты:', error);
+                loadingMessage.style.display = 'none';
+                errorMessage.textContent = 'Не удалось загрузить проекты. Проверь консоль.';
+                errorMessage.style.display = 'block';
             }
-
-            repelLeavesFromEachOther();
-
-            for (const update of leafUpdates) {
-                update.element.style.transform = update.transform;
-                update.element.style.left = update.left;
-                update.element.style.top = update.top;
-            }
-
         }
 
-        // --- Initialization ---
-        initializeLeaves();
-        animate();
-
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') {
-                animate();
-            } else {
-                cancelAnimationFrame(animationFrameId);
-            }
-        });
-
-        // --- Text Dragging ---
-        const textContainer = document.getElementById('text-container');
-        let isDraggingText = false;
-        let dragOffsetXText = 0;
-        let dragOffsetYText = 0;
-        let textZIndex = 10;
-
-        textContainer.addEventListener('mousedown', (event) => {
-            isDraggingText = true;
-            dragOffsetXText = event.clientX - textContainer.getBoundingClientRect().left;
-            dragOffsetYText = event.clientY - textContainer.getBoundingClientRect().top;
-            textContainer.style.zIndex = ++textZIndex;
-            event.stopPropagation();
-        });
-
-        document.addEventListener('mousemove', (event) => {
-            if (isDraggingText) {
-                let newX = event.clientX - dragOffsetXText;
-                let newY = event.clientY - dragOffsetYText;
-
-                newY = Math.max(0, newY);
-
-                textContainer.style.left = `${newX}px`;
-                textContainer.style.top = `${newY}px`;
-
-                textContainer.style.transform = 'none';
-            }
-        });
-
-        document.addEventListener('mouseup', () => {
-            isDraggingText = false;
-        });
-
-        textContainer.addEventListener('dragstart', (e) => e.preventDefault());
-
-        // --- Prevent Dragging into Telegram Area ---
-        const telegramContainer = document.getElementById('telegram-container');
-        telegramContainer.addEventListener('mousedown', (event) => {
-            event.stopPropagation();
-        });
-
-        telegramContainer.addEventListener('selectstart', (event) => {
-            event.preventDefault();
-        });
+        fetchProjects();
     </script>
 </body>
 </html>
