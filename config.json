@@ -19,6 +19,13 @@
         "ru": "Не можешь решить, что съесть или какой баг исправить первым? Вращай колесо и позволь судьбе решить за тебя.",
         "en": "Can't decide what to eat or which bug to fix first? Spin the wheel and let fate take the driver's seat."
       }
+    },
+    {
+      "name": "dice-roller",
+      "description": {
+        "ru": "Стильный бросатель кубиков для настольных игр. Поддерживает сложные формулы и бросок встряхиванием на телефоне.",
+        "en": "A stylish dice roller for tabletop games. Supports complex formulas and a 'shake to roll' feature on mobile devices."
+      }
     }
   ]
 }
