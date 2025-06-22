@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>infikot's Lab</title>
     <style>
+        /* CSS стили остаются теми же */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-
         :root {
             --bg-color: #121212;
             --primary-text-color: #e0e0e0;
@@ -16,144 +16,65 @@
             --card-hover-border: #007bff;
             --font-family: 'Inter', sans-serif;
         }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--primary-text-color);
-            font-family: var(--font-family);
-            margin: 0;
-            padding: 40px 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        header h1 {
-            font-size: 3rem;
-            font-weight: 900;
-        }
-        
-        header p {
-            font-size: 1.2rem;
-            color: var(--secondary-text-color);
-            margin-top: -1rem;
-        }
-
-        #projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 50px;
-            text-align: left;
-        }
-
-        .project-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 8px;
-            padding: 25px;
-            text-decoration: none;
-            color: inherit;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.2s ease, border-color 0.2s ease;
-        }
-
-        .project-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--card-hover-border);
-        }
-
-        .project-card h2 {
-            margin: 0 0 10px 0;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-text-color);
-        }
-
-        .project-card p {
-            font-size: 1rem;
-            color: var(--secondary-text-color);
-            line-height: 1.5;
-            flex-grow: 1; /* Чтобы карточки были одинаковой высоты */
-        }
-
-        #loading-message, #error-message {
-            color: var(--secondary-text-color);
-            font-size: 1.2rem;
-        }
-
-        footer {
-            margin-top: 50px;
-            color: var(--secondary-text-color);
-            font-size: 0.9rem;
-        }
-
+        body { background-color: var(--bg-color); color: var(--primary-text-color); font-family: var(--font-family); margin: 0; padding: 40px 20px; }
+        .container { max-width: 1200px; margin: 0 auto; text-align: center; }
+        header h1 { font-size: 3rem; font-weight: 900; }
+        header p { font-size: 1.2rem; color: var(--secondary-text-color); margin-top: -1rem; }
+        #projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 50px; text-align: left; }
+        .project-card { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 25px; text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: transform 0.2s ease, border-color 0.2s ease; }
+        .project-card:hover { transform: translateY(-5px); border-color: var(--card-hover-border); }
+        .project-card h2 { margin: 0 0 10px 0; font-size: 1.5rem; font-weight: 700; color: var(--primary-text-color); }
+        .project-card p { font-size: 1rem; color: var(--secondary-text-color); line-height: 1.5; flex-grow: 1; }
+        footer { margin-top: 50px; color: var(--secondary-text-color); font-size: 0.9rem; }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>infikot's Lab</h1>
-            <p>Коллекция моих безумных экспериментов и смешнявок</p>
+            <!-- Заменили подзаголовок -->
+            <p>Коллекция моих странных проектов</p>
         </header>
 
         <main id="projects-grid">
-            <p id="loading-message">Ищу проекты в твоём GitHub...</p>
-            <p id="error-message" style="display: none;"></p>
+            <p id="loading-message">Загрузка проектов из config.json...</p>
         </main>
 
         <footer>
-            Сделано с помощью магии и GitHub Search API
+            Собрано из config.json, с любовью и без API
         </footer>
     </div>
 
     <script>
         const USERNAME = 'infikot';
-        // Убедись, что этот тег добавлен к репозиториям на GitHub
-        const TOPIC_TO_FILTER = 'fun-project'; 
-
         const grid = document.getElementById('projects-grid');
         const loadingMessage = document.getElementById('loading-message');
-        const errorMessage = document.getElementById('error-message');
 
-        async function fetchProjects() {
-            // Формируем специальный поисковый запрос
-            const searchQuery = `user:${USERNAME} topic:${TOPIC_TO_FILTER}`;
-            const apiUrl = `https://api.github.com/search/repositories?q=${encodeURIComponent(searchQuery)}&sort=updated`;
-
+        async function loadAndDisplayProjects() {
             try {
-                const response = await fetch(apiUrl);
+                // Загружаем наш локальный JSON файл
+                const response = await fetch('./config.json');
                 if (!response.ok) {
-                    throw new Error(`Ошибка сети: ${response.status}`);
+                    throw new Error(`Не удалось загрузить config.json: ${response.statusText}`);
                 }
-                const data = await response.json();
+                const config = await response.json();
+                const projects = config.projects;
                 
-                // В ответе Search API проекты лежат в поле .items
-                const funProjects = data.items;
-
+                // Очищаем сообщение о загрузке
                 loadingMessage.style.display = 'none';
 
-                if (!funProjects || funProjects.length === 0) {
-                    errorMessage.textContent = `Проекты с тегом "${TOPIC_TO_FILTER}" не найдены. Проверь, что тег добавлен правильно.`;
-                    errorMessage.style.display = 'block';
+                if (!projects || projects.length === 0) {
+                    const message = document.createElement('p');
+                    message.textContent = "В файле config.json пока нет ни одного проекта.";
+                    grid.appendChild(message);
                     return;
                 }
-
-                funProjects.forEach(repo => {
-                    // Игнорируем сам главный сайт, если вдруг ему тоже добавлен этот тег
-                    if (repo.name === `${USERNAME}.github.io`) {
-                        return;
-                    }
-                    
+                
+                projects.forEach(repo => {
                     const card = document.createElement('a');
                     card.className = 'project-card';
-                    // Ссылка на GitHub Pages проекта
                     card.href = `https://${USERNAME}.github.io/${repo.name}/`;
-                    card.target = '_self'; 
+                    card.target = '_self';
 
                     const title = document.createElement('h2');
                     title.textContent = repo.name;
@@ -167,14 +88,13 @@
                 });
 
             } catch (error) {
-                console.error('Не удалось загрузить проекты:', error);
-                loadingMessage.style.display = 'none';
-                errorMessage.textContent = 'Ошибка при запросе к GitHub API. Попробуй обновить страницу или проверь консоль.';
-                errorMessage.style.display = 'block';
+                console.error('Ошибка:', error);
+                loadingMessage.textContent = 'Не удалось загрузить или обработать config.json. Проверь консоль.';
+                loadingMessage.style.color = 'red';
             }
         }
 
-        fetchProjects();
+        loadAndDisplayProjects();
     </script>
 </body>
 </html>
