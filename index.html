@@ -57,7 +57,8 @@
             padding: 25px;
             text-decoration: none;
             color: inherit;
-            display: block;
+            display: flex;
+            flex-direction: column;
             transition: transform 0.2s ease, border-color 0.2s ease;
         }
 
@@ -77,6 +78,7 @@
             font-size: 1rem;
             color: var(--secondary-text-color);
             line-height: 1.5;
+            flex-grow: 1; /* Чтобы карточки были одинаковой высоты */
         }
 
         #loading-message, #error-message {
@@ -96,22 +98,22 @@
     <div class="container">
         <header>
             <h1>infikot's Lab</h1>
-            <p>Коллекция моих бесполезных проектов</p>
+            <p>Коллекция моих безумных экспериментов и смешнявок</p>
         </header>
 
         <main id="projects-grid">
-            <p id="loading-message">Загружаю проекты с GitHub API...</p>
+            <p id="loading-message">Ищу проекты в твоём GitHub...</p>
             <p id="error-message" style="display: none;"></p>
         </main>
 
         <footer>
-            Сделано с помощью магии и GitHub API
+            Сделано с помощью магии и GitHub Search API
         </footer>
     </div>
 
     <script>
         const USERNAME = 'infikot';
-        // !!! ВАЖНО: Придумай и используй этот тег для своих проектов
+        // Убедись, что этот тег добавлен к репозиториям на GitHub
         const TOPIC_TO_FILTER = 'fun-project'; 
 
         const grid = document.getElementById('projects-grid');
@@ -119,32 +121,39 @@
         const errorMessage = document.getElementById('error-message');
 
         async function fetchProjects() {
+            // Формируем специальный поисковый запрос
+            const searchQuery = `user:${USERNAME} topic:${TOPIC_TO_FILTER}`;
+            const apiUrl = `https://api.github.com/search/repositories?q=${encodeURIComponent(searchQuery)}&sort=updated`;
+
             try {
-                const response = await fetch(`https://api.github.com/users/${USERNAME}/repos?sort=updated&per_page=100`);
+                const response = await fetch(apiUrl);
                 if (!response.ok) {
-                    throw new Error(`Ошибка сети: ${response.status} - ${response.statusText}`);
+                    throw new Error(`Ошибка сети: ${response.status}`);
                 }
-                const repos = await response.json();
+                const data = await response.json();
                 
-                const funProjects = repos.filter(repo => 
-                    repo.topics.includes(TOPIC_TO_FILTER) &&
-                    repo.name !== `${USERNAME}.github.io`
-                );
+                // В ответе Search API проекты лежат в поле .items
+                const funProjects = data.items;
 
                 loadingMessage.style.display = 'none';
 
-                if (funProjects.length === 0) {
-                    errorMessage.textContent = `Проекты с тегом "${TOPIC_TO_FILTER}" не найдены. Добавь тег к репозиториям!`;
+                if (!funProjects || funProjects.length === 0) {
+                    errorMessage.textContent = `Проекты с тегом "${TOPIC_TO_FILTER}" не найдены. Проверь, что тег добавлен правильно.`;
                     errorMessage.style.display = 'block';
                     return;
                 }
 
                 funProjects.forEach(repo => {
+                    // Игнорируем сам главный сайт, если вдруг ему тоже добавлен этот тег
+                    if (repo.name === `${USERNAME}.github.io`) {
+                        return;
+                    }
+                    
                     const card = document.createElement('a');
                     card.className = 'project-card';
-                    // Формируем ссылку на GitHub Pages проекта
+                    // Ссылка на GitHub Pages проекта
                     card.href = `https://${USERNAME}.github.io/${repo.name}/`;
-                    card.target = '_self'; // Открывать в той же вкладке
+                    card.target = '_self'; 
 
                     const title = document.createElement('h2');
                     title.textContent = repo.name;
@@ -160,7 +169,7 @@
             } catch (error) {
                 console.error('Не удалось загрузить проекты:', error);
                 loadingMessage.style.display = 'none';
-                errorMessage.textContent = 'Не удалось загрузить проекты. Проверь консоль.';
+                errorMessage.textContent = 'Ошибка при запросе к GitHub API. Попробуй обновить страницу или проверь консоль.';
                 errorMessage.style.display = 'block';
             }
         }
