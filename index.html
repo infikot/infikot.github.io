@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>infikot's Lab</title>
     <style>
-        /* Стили остались те же, плюс стили для новых элементов */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         :root {
             --bg-color: #121212;
@@ -18,7 +17,7 @@
             --input-border: #333;
             --font-family: 'Inter', sans-serif;
         }
-        body { background-color: var(--bg-color); color: var(--primary-text-color); font-family: var(--font-family); margin: 0; padding: 40px 20px; box-sizing: border-box; min-height: 100vh; }
+        body { background-color: var(--bg-color); color: var(--primary-text-color); font-family: var(--font-family); margin: 0; padding: 40px 20px 80px 20px; box-sizing: border-box; min-height: 100vh; }
         .container { max-width: 1200px; margin: 0 auto; text-align: center; }
         header h1 { font-size: 3rem; font-weight: 900; }
         header p { font-size: 1.2rem; color: var(--secondary-text-color); margin-top: -1rem; }
@@ -27,16 +26,13 @@
         .project-card:hover { transform: translateY(-5px); border-color: var(--card-hover-border); }
         .project-card h2 { margin: 0 0 10px 0; font-size: 1.5rem; font-weight: 700; color: var(--primary-text-color); }
         .project-card p { font-size: 1rem; color: var(--secondary-text-color); line-height: 1.5; flex-grow: 1; }
-        
-        /* Стили для новых элементов */
-        .lang-switcher { position: absolute; top: 20px; right: 20px; }
+        .lang-switcher { position: fixed; top: 20px; right: 20px; z-index: 100; }
         .lang-switcher a { color: var(--secondary-text-color); text-decoration: none; margin: 0 5px; font-weight: 700; padding: 5px; border-bottom: 2px solid transparent; transition: all 0.2s; }
         .lang-switcher a.active { color: var(--primary-text-color); border-bottom-color: var(--card-hover-border); }
-
-        .footer { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); }
+        .footer { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 100;}
         #author-signature { color: var(--secondary-text-color); cursor: pointer; font-size: 0.9rem; padding: 5px 10px; transition: color 0.2s; }
         #author-signature:hover { color: var(--primary-text-color); }
-        #links-popup { position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%); background-color: var(--input-bg); border: 1px solid var(--input-border); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 10px; opacity: 0; visibility: hidden; transform: translate(-50%, 10px); transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0.3s; z-index: 100; }
+        #links-popup { position: absolute; bottom: 120%; left: 50%; background-color: var(--input-bg); border: 1px solid var(--input-border); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 10px; opacity: 0; visibility: hidden; transform: translate(-50%, 10px); transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0.3s; z-index: 100; }
         #links-popup.visible { opacity: 1; visibility: visible; transform: translate(-50%, 0); transition-delay: 0s; }
         #links-popup a { color: var(--primary-text-color); text-decoration: none; padding: 8px 15px; display: block; border-radius: 5px; transition: background-color 0.2s; white-space: nowrap; }
         #links-popup a:hover { background-color: rgba(255, 255, 255, 0.1); }
@@ -53,7 +49,6 @@
         </main>
     </div>
 
-    <!-- Новые элементы интерфейса, как ты и хотел -->
     <div class="lang-switcher">
         <a href="#" class="lang-btn" data-lang="ru">RU</a>
         <a href="#" class="lang-btn" data-lang="en">EN</a>
@@ -67,11 +62,9 @@
         </div>
     </div>
 
-
     <script>
         const USERNAME = 'infikot';
 
-        // Элементы DOM
         const subtitle = document.getElementById('page-subtitle');
         const grid = document.getElementById('projects-grid');
         const loadingMessage = document.getElementById('loading-message');
@@ -79,25 +72,17 @@
         const authorSignature = document.getElementById('author-signature');
         const linksPopup = document.getElementById('links-popup');
 
-        // Состояние приложения
-        let currentLang = 'ru';
-        let pageData = null; // Здесь будет храниться загруженный config.json
+        let currentLang = localStorage.getItem('preferredLang') || 'ru';
+        let pageData = null; 
 
         function renderPage() {
-            if (!pageData) return; // Не рендерить, если данные еще не загружены
-
-            // Устанавливаем язык документа
+            if (!pageData || !pageData.pageInfo) {
+                subtitle.textContent = "Ошибка загрузки конфигурации.";
+                return; 
+            }
             document.documentElement.lang = currentLang;
-
-            // Обновляем подзаголовок страницы
             subtitle.textContent = pageData.pageInfo.subtitle[currentLang] || pageData.pageInfo.subtitle.en;
-
-            // Обновляем кнопки языка
-            langButtons.forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.lang === currentLang);
-            });
-            
-            // Очищаем и заполняем сетку проектов
+            langButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.lang === currentLang));
             grid.innerHTML = '';
             const projects = pageData.projects;
 
@@ -107,19 +92,15 @@
                 grid.appendChild(message);
                 return;
             }
-
             projects.forEach(repo => {
                 const card = document.createElement('a');
                 card.className = 'project-card';
                 card.href = `https://${USERNAME}.github.io/${repo.name}/`;
                 card.target = '_self';
-
                 const title = document.createElement('h2');
                 title.textContent = repo.name;
-
                 const description = document.createElement('p');
                 description.textContent = repo.description[currentLang] || repo.description.en || 'No description provided.';
-
                 card.appendChild(title);
                 card.appendChild(description);
                 grid.appendChild(card);
@@ -131,21 +112,20 @@
                 const response = await fetch('./config.json');
                 if (!response.ok) throw new Error('Failed to load config.json');
                 pageData = await response.json();
-                
                 loadingMessage.style.display = 'none';
-                renderPage(); // Первый рендер
+                renderPage();
             } catch (error) {
                 console.error('Initialization error:', error);
                 loadingMessage.textContent = 'Ошибка загрузки config.json. Проверь консоль.';
             }
         }
         
-        // Слушатели событий
         langButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 currentLang = e.target.dataset.lang;
-                renderPage(); // Перерендериваем страницу с новым языком
+                localStorage.setItem('preferredLang', currentLang);
+                renderPage(); 
             });
         });
 
@@ -160,9 +140,7 @@
             }
         });
         
-        // Запускаем всё!
         initializeApp();
-
     </script>
 </body>
 </html>
