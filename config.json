@@ -26,6 +26,13 @@
         "ru": "Стильный бросатель кубиков для настольных игр. Поддерживает сложные формулы и бросок встряхиванием на телефоне.",
         "en": "A stylish dice roller for tabletop games. Supports complex formulas and a 'shake to roll' feature on mobile devices."
       }
+    },
+    {
+      "name": "schrodingers-cat",
+      "description": {
+        "ru": "Минималистичный симулятор кота, основанный на состояниях и исследующий двойственность присутствия и привязанности. С множеством концовок и динамической системой действий.",
+        "en": "A minimalist, state-based cat simulator exploring the duality of presence and affection. Features multiple endings and a dynamic action system."
+      }
     }
   ]
 }
