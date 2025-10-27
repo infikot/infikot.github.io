@@ -36,13 +36,20 @@
         /* Общие стили карточек */
         .project-card, .app-card { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 25px; text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: transform 0.2s ease, border-color 0.2s ease; }
         .project-card:hover, .app-card:hover { transform: translateY(-5px); border-color: var(--card-hover-border); }
-        .project-card h2, .app-card h2 { margin: 0 0 10px 0; font-size: 1.5rem; font-weight: 700; color: var(--primary-text-color); }
+        .project-card h2 { margin: 0 0 10px 0; font-size: 1.5rem; font-weight: 700; color: var(--primary-text-color); }
         .project-card p, .app-card p { font-size: 1rem; color: var(--secondary-text-color); line-height: 1.5; flex-grow: 1; margin-bottom: 20px; }
         
         /* Уникальные стили для карточек приложений */
         .app-card { position: relative; }
         .app-card-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
-        .app-card-icon { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; }
+        .app-card-icon { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+        
+        /* --- НОВЫЕ СТИЛИ ДЛЯ ВЕРСИИ --- */
+        .app-card-title-wrapper { flex-grow: 1; position: relative; }
+        .app-card h2 { margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--primary-text-color); padding-right: 55px; /* Место для версии, чтобы длинный заголовок не заезжал под нее */ }
+        .app-version { position: absolute; top: 0; right: 0; font-size: 0.8rem; font-weight: 700; color: var(--secondary-text-color); background-color: rgba(255, 255, 255, 0.05); padding: 3px 8px; border-radius: 12px; border: 1px solid var(--card-border); }
+        /* ---------------------------------- */
+
         .app-card .download-btn { display: inline-block; background-color: var(--button-active-bg); color: var(--button-active-color); padding: 12px 20px; border-radius: 6px; text-align: center; text-decoration: none; font-weight: 700; margin-top: auto; transition: background-color 0.2s; }
         .app-card .download-btn:hover { background-color: #0056b3; }
 
@@ -91,8 +98,6 @@
 
     <script>
         const USERNAME = 'infikot';
-
-        // --- DOM Elements ---
         const subtitle = document.getElementById('page-subtitle');
         const grid = document.getElementById('projects-grid');
         const loadingMessage = document.getElementById('loading-message');
@@ -101,18 +106,15 @@
         const authorSignature = document.getElementById('author-signature');
         const linksPopup = document.getElementById('links-popup');
 
-        // --- State ---
         let currentLang = localStorage.getItem('preferredLang') || 'ru';
-        let currentView = localStorage.getItem('preferredView') || 'apps'; // 'apps' или 'projects'
+        let currentView = localStorage.getItem('preferredView') || 'apps';
         let pageData = null;
         let appsData = null;
 
-        // --- Translation Helper ---
         function getTranslation(obj, lang) {
             return obj?.[lang] || obj?.['en'] || '...';
         }
 
-        // --- Rendering Functions ---
         function renderProjectsGrid() {
             grid.innerHTML = '';
             if (!pageData?.projects || pageData.projects.length === 0) {
@@ -132,6 +134,7 @@
             });
         }
 
+        // --- ИЗМЕНЕНА ФУНКЦИЯ РЕНДЕРА ПРИЛОЖЕНИЙ ---
         function renderAppsGrid() {
             grid.innerHTML = '';
             if (!appsData?.apps || appsData.apps.length === 0) {
@@ -141,10 +144,17 @@
             appsData.apps.forEach(app => {
                 const card = document.createElement('div');
                 card.className = 'app-card';
+
+                // Создаем тег версии, только если версия указана в JSON
+                const versionTag = app.version ? `<span class="app-version">${app.version}</span>` : '';
+
                 card.innerHTML = `
                     <div class="app-card-header">
                         <img src="${app.icon_url}" alt="${app.name} icon" class="app-card-icon" onerror="this.style.display='none'">
-                        <h2>${app.name}</h2>
+                        <div class="app-card-title-wrapper">
+                            <h2>${app.name}</h2>
+                            ${versionTag}
+                        </div>
                     </div>
                     <p>${getTranslation(app.description, currentLang)}</p>
                     <a href="${app.exe_url}" class="download-btn" target="_blank" rel="noopener noreferrer">${getTranslation({ru: "Скачать", en: "Download"}, currentLang)}</a>
@@ -152,24 +162,16 @@
                 grid.appendChild(card);
             });
         }
+        // ---------------------------------------------
 
-        // --- Main UI Update Function ---
         function updateUI() {
             if (!pageData) return;
-
-            // Update language and document attributes
             document.documentElement.lang = currentLang;
             langButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.lang === currentLang));
-
-            // Update static text on the page
             subtitle.textContent = getTranslation(pageData.pageInfo.subtitle, currentLang);
             document.getElementById('apps-btn').textContent = getTranslation(pageData.ui.apps_tab, currentLang);
             document.getElementById('projects-btn').textContent = getTranslation(pageData.ui.projects_tab, currentLang);
-
-            // Update view switcher active state
             viewButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.view === currentView));
-            
-            // Render the correct grid
             if (currentView === 'apps') {
                 renderAppsGrid();
             } else {
@@ -177,24 +179,20 @@
             }
         }
 
-        // --- Initialization ---
         async function initializeApp() {
             try {
                 const [pageResponse, appsResponse] = await Promise.all([
                     fetch('./config.json'),
-                    fetch('./apps/config.json') // Загружаем конфиг для приложений
+                    fetch('./apps/config.json')
                 ]);
-
                 if (!pageResponse.ok) throw new Error('Failed to load config.json');
                 pageData = await pageResponse.json();
-
                 if (appsResponse.ok) {
                     appsData = await appsResponse.json();
                 } else {
                     console.warn('Could not load apps/config.json. The "Interesting" tab might be empty.');
-                    appsData = { apps: [] }; // Предотвращаем ошибку, если файл не найден
+                    appsData = { apps: [] };
                 }
-
                 loadingMessage.style.display = 'none';
                 updateUI();
             } catch (error) {
@@ -203,7 +201,6 @@
             }
         }
 
-        // --- Event Listeners ---
         langButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -232,7 +229,6 @@
             }
         });
 
-        // --- Start the App ---
         initializeApp();
     </script>
 </body>
