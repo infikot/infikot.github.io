@@ -5,6 +5,10 @@
       "en": "A collection of my weird projects"
     }
   },
+  "ui": {
+    "projects_tab": { "ru": "Остальное", "en": "The Rest" },
+    "apps_tab": { "ru": "Интересное", "en": "Interesting" }
+  },
   "projects": [
     {
       "name": "office-oracle",
