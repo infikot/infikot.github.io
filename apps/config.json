@@ -1,1 +1,22 @@
-{}
+{
+  "apps": [
+    {
+      "name": "тест",
+      "description": {
+        "ru": "тест 1",
+        "en": "test 1"
+      },
+      "icon_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Max_logo_2025.png/250px-Max_logo_2025.png",
+      "exe_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Max_logo_2025.png/250px-Max_logo_2025.png"
+    },
+    {
+      "name": "тест 2",
+      "description": {
+        "ru": "тест 2",
+        "en": "test 2"
+      },
+      "icon_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Max_logo_2025.png/250px-Max_logo_2025.png",
+      "exe_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Max_logo_2025.png/250px-Max_logo_2025.png"
+    }
+  ]
+}
