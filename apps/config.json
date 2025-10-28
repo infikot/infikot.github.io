@@ -9,6 +9,15 @@
       },
       "icon_url": "https://raw.githubusercontent.com/infikot/infikot.github.io/refs/heads/main/apps/cbd2.png",
       "exe_url": "https://github.com/infikot/infikot.github.io/raw/refs/heads/main/apps/cbd2.exe"
+    },
+    {
+      "name": "other",
+      "description": {
+        "ru": "тут будут другие проекты..",
+        "en": "we'll have other projects here.."
+      },
+      "icon_url": "#",
+      "exe_url": "#"
     }
   ]
 }
