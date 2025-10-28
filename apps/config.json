@@ -1,22 +1,13 @@
 {
   "apps": [
     {
-      "name": "тест",
-      "version": "0.0.1",
+      "name": "cbd2",
+      "version": "0.1.0",
       "description": {
-        "ru": "тест 1",
-        "en": "test 1"
+        "ru": "CBD2 (Config Bridge Dota 2) - позволяет импортировать, экспортировать и просто переносить конфиги между аккаунтами.",
+        "en": "CBD2 (Config Bridge Dota 2) - lets 'em import, export, and just toss configs between accounts."
       },
-      "icon_url": "#",
-      "exe_url": "#"
-    },
-    {
-      "name": "тест 2",
-      "description": {
-        "ru": "тест 2",
-        "en": "test 2"
-      },
-      "icon_url": "#",
+      "icon_url": "https://raw.githubusercontent.com/infikot/infikot.github.io/refs/heads/main/apps/cbd2.png",
       "exe_url": "#"
     }
   ]
